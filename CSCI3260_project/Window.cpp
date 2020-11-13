@@ -3,7 +3,53 @@
 // Constructor
 Window::Window()
 {
+	/* Initialize the glfw */
+	if (!glfwInit()) {
+		std::cout << "Failed to initialize GLFW" << std::endl;
+		this->status = -1;
+	}
 
+	/* glfw: configure; necessary for MAC */
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	#ifdef __APPLE__
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	#endif
+
+	/* Create a windowed mode window and its OpenGL context */
+	this->window = glfwCreateWindow(this->width, this->height, "CSCI3260 Project", NULL, NULL);
+	if (!this->window) {
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		this->status = -1;
+	}
+
+	/* Make the window's context current */
+	glfwMakeContextCurrent(this->window);
+
+	/*register callback functions*/
+	glfwSetFramebufferSizeCallback(this->window, Window::framebuffer_size_callback);
+	glfwSetKeyCallback(this->window, Window::key_callback);
+	glfwSetScrollCallback(this->window, Window::scroll_callback);
+	glfwSetCursorPosCallback(this->window, Window::cursor_position_callback);
+	glfwSetMouseButtonCallback(this->window, Window::mouse_button_callback);
+
+	initializedGL();
+
+	while (!glfwWindowShouldClose(this->window)) {
+		/* Render here */
+		paintGL();
+
+		/* Swap front and back buffers */
+		glfwSwapBuffers(this->window);
+
+		/* Poll for and process events */
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
 }
 
 // Get OpenGL info
@@ -42,6 +88,11 @@ void Window::paintGL(void)
 {
 	glClearColor(1.0f, 1.0f, 1.0f, 0.5f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// Get status value
+int Window::getStatus() {
+	return this->status;
 }
 
 // Frame buffer callback
