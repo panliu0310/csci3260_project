@@ -1,23 +1,18 @@
 #pragma once
-#include "Dependencies/glew/glew.h"
-#include "Dependencies/GLFW/glfw3.h"
-#include "Dependencies/glm/glm.hpp"
-#include "Dependencies/glm/gtc/matrix_transform.hpp"
-
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <map>
+#include "Shader.h"
 
 class Window
 {
-  // Constructor and destructor
+  // Constructor
   public:
     Window();
 
   // Variables
   private:
     GLFWwindow* window{};
+    std::vector<Shader> shaders;
+
+  private:
     int status = 0;
     const int width = 800;
     const int height = 600;
@@ -28,6 +23,10 @@ class Window
     void sendDataToOpenGL();
     void initializedGL(void);
     void paintGL(void);
+
+  public:
+    void createShader(const char* vertexPath, const char* fragmentPath);
+    void removeShader(int index);
 
   // Getters
   public:

@@ -21,6 +21,9 @@
     <ClCompile Include="Window.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore">
@@ -29,6 +32,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="include.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

@@ -90,6 +90,22 @@ void Window::paintGL(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+// Create shader
+void Window::createShader(const char* vertexPath, const char* fragmentPath)
+{
+	this->shaders.push_back(Shader(vertexPath, fragmentPath));
+}
+
+// Remove shader
+void Window::removeShader(int index)
+{
+	if (index > this->shaders.size()) {
+		std::cout << "Index input exceeds size" << std::endl;
+		return;
+	}
+	this->shaders.erase(this->shaders.begin() + index);
+}
+
 // Get status value
 int Window::getStatus() {
 	return this->status;
