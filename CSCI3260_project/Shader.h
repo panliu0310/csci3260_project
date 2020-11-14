@@ -1,6 +1,9 @@
 #pragma once
 #include "include.h"
 
+using IV = PFNGLGETSHADERIVPROC;
+using IL = PFNGLGETSHADERINFOLOGPROC;
+
 class Shader
 {
 	// Constructor
@@ -24,6 +27,6 @@ class Shader
 		std::string readShaderCode(const char* fileName) const;
 		bool checkShaderStatus(GLuint shaderID) const;
 		bool checkProgramStatus(GLuint programID) const;
-		bool checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc, PFNGLGETSHADERINFOLOGPROC getInfoLogFunc, GLenum statusType) const;
+		bool checkStatus(GLuint objectID, IV objectPropertyGetterFunc, IL getInfoLogFunc, GLenum statusType) const;
 };
 

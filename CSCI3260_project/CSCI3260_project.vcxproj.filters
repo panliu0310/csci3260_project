@@ -24,6 +24,12 @@
     <ClCompile Include="Shader.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore">
@@ -37,8 +43,19 @@
     <ClInclude Include="Shader.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
     <ClInclude Include="include.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="readme.txt">
+      <Filter>來源檔案</Filter>
+    </Text>
   </ItemGroup>
 </Project>

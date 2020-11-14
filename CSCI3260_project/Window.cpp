@@ -97,18 +97,68 @@ void Window::createShader(const char* vertexPath, const char* fragmentPath)
 }
 
 // Remove shader
-void Window::removeShader(int index)
+void Window::removeShader(unsigned int index)
 {
 	if (index > this->shaders.size()) {
-		std::cout << "Index input exceeds size" << std::endl;
+		std::cout << "Invalid index" << std::endl;
 		return;
 	}
 	this->shaders.erase(this->shaders.begin() + index);
 }
 
+// Create model
+void Window::createModel(const char* objPath)
+{
+	this->models.push_back(Model(objPath));
+}
+
+// Remove model
+void Window::removeModel(unsigned int index)
+{
+	if (index > this->models.size()) {
+		std::cout << "Invalid index" << std::endl;
+		return;
+	}
+	this->models.erase(this->models.begin() + index);
+}
+
+// Create texture
+void Window::createTexture(const char* texturePath)
+{
+	this->textures.push_back(Texture(texturePath));
+}
+
+// Remove texture
+void Window::removeTexture(unsigned int index)
+{
+	if (index > this->textures.size()) {
+		std::cout << "Invalid index" << std::endl;
+		return;
+	}
+	this->textures.erase(this->textures.begin() + index);
+}
+
 // Get status value
 int Window::getStatus() {
 	return this->status;
+}
+
+// Get shader
+Shader Window::getShader(unsigned int index)
+{
+	return this->shaders[index];
+}
+
+// Get model
+Model Window::getModel(unsigned int index)
+{
+	return this->models[index];
+}
+
+// Get texture
+Texture Window::getTexture(unsigned int index)
+{
+	return this->textures[index];
 }
 
 // Frame buffer callback

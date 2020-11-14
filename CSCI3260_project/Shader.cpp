@@ -97,7 +97,7 @@ bool Shader::checkProgramStatus(GLuint programID) const
 }
 
 // Check status
-bool Shader::checkStatus(GLuint objectID, PFNGLGETSHADERIVPROC objectPropertyGetterFunc, PFNGLGETSHADERINFOLOGPROC getInfoLogFunc, GLenum statusType) const
+bool Shader::checkStatus(GLuint objectID, IV objectPropertyGetterFunc, IL getInfoLogFunc, GLenum statusType) const
 {
 	GLint status;
 	objectPropertyGetterFunc(objectID, statusType, &status);

@@ -1,5 +1,7 @@
 #pragma once
 #include "Shader.h"
+#include "Model.h"
+#include "Texture.h"
 
 class Window
 {
@@ -10,12 +12,11 @@ class Window
   // Variables
   private:
     GLFWwindow* window{};
-    std::vector<Shader> shaders;
-
-  private:
     int status = 0;
-    const int width = 800;
-    const int height = 600;
+    const int width = 800, height = 600;
+    std::vector<Shader> shaders;
+    std::vector<Model> models;
+    std::vector<Texture> textures;
 
   // Functions
   public:
@@ -26,11 +27,18 @@ class Window
 
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
-    void removeShader(int index);
+    void removeShader(unsigned int index);
+    void createModel(const char* objPath);
+    void removeModel(unsigned int index);
+    void createTexture(const char* texturePath);
+    void removeTexture(unsigned int index);
 
   // Getters
   public:
     int getStatus();
+    Shader getShader(unsigned int index);
+    Model getModel(unsigned int index);
+    Texture getTexture(unsigned int index);
 
   // Callbacks
   public:
