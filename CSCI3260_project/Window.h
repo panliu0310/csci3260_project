@@ -1,7 +1,6 @@
 #pragma once
-#include "Shader.h"
 #include "Model.h"
-#include "Texture.h"
+#include "Shader.h"
 
 class Window
 {

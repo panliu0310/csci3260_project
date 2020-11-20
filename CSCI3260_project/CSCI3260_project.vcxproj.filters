@@ -30,11 +30,16 @@
     <ClCompile Include="Model.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>來源檔案</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore">
       <Filter>來源檔案</Filter>
     </None>
+    <None Include="Shaders\fragmentShader.glsl" />
+    <None Include="Shaders\vertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -50,6 +55,9 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="include.h">
+      <Filter>標頭檔</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>

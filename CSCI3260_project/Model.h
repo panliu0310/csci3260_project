@@ -1,5 +1,6 @@
 #pragma once
 #include "include.h"
+#include "Texture.h"
 
 struct Vertex {
 	glm::vec3 position;
@@ -18,5 +19,9 @@ class Model
 		GLuint vaoID{}, vboID{}, eboID{};
 		std::vector<Vertex> vertices;
 		std::vector<unsigned int> indices;
+
+	// Functions
+	public:
+		void draw() const;
 };
 

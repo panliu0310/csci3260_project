@@ -107,3 +107,11 @@ Model::Model(const char* objPath)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
 }
+
+// Draw function
+void Model::draw() const
+{
+	glBindVertexArray(this->vaoID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
+	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+}
