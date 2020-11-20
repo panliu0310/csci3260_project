@@ -1,20 +1,18 @@
 #include "Model.h"
 
+struct V {
+	unsigned int index_position, index_uv, index_normal;
+	bool operator == (const V& v) const {
+		return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
+	}
+	bool operator < (const V& v) const {
+		return (index_position < v.index_position) || (index_position == v.index_position && index_uv < v.index_uv) || (index_position == v.index_position && index_uv == v.index_uv && index_normal < v.index_normal);
+	}
+};
+
 // Constructor
 Model::Model(const char* objPath)
 {
-	struct V {
-		unsigned int index_position, index_uv, index_normal;
-		bool operator == (const V& v) const {
-			return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
-		}
-		bool operator < (const V& v) const {
-			return (index_position < v.index_position) ||
-				(index_position == v.index_position && index_uv < v.index_uv) ||
-				(index_position == v.index_position && index_uv == v.index_uv && index_normal < v.index_normal);
-		}
-	};
-
 	std::vector<glm::vec3> temp_positions;
 	std::vector<glm::vec2> temp_uvs;
 	std::vector<glm::vec3> temp_normals;
@@ -109,9 +107,9 @@ Model::Model(const char* objPath)
 }
 
 // Draw function
-void Model::draw() const
+void Model::draw()
 {
 	glBindVertexArray(this->vaoID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
-	glDrawElements(GL_TRIANGLES, this->indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, GLsizei(this->indices.size()), GL_UNSIGNED_INT, 0);
 }

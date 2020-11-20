@@ -22,6 +22,6 @@ class Model
 
 	// Functions
 	public:
-		void draw() const;
+		void draw();
 };
 

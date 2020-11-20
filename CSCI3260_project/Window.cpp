@@ -90,6 +90,7 @@ void Window::paintGL(void)
 {
 	glClearColor(0.2f, 0.2f, 0.2f, 0.5f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	this->getShader(0).use();
 
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	this->getShader(0).setVec3("eyePositionWorld", eyePosition);
@@ -99,13 +100,14 @@ void Window::paintGL(void)
 	this->getShader(0).setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 	this->getShader(0).setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
+	this->getShader(0).setFloat("material.shininess", 32.0f);
 
-	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.001f, 0.001f, 0.001f));
+	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 	glm::mat4 rotationMatrix_spacecraft = glm::mat4(1.0f);
-	glm::mat4 translateMatrix_spacecraft = glm::mat4(1.0f);
-	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 15.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
+	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 100.0f);
+
 	this->getShader(0).setMat4("scaleMatrix", scaleMatrix_spacecraft);
 	this->getShader(0).setMat4("rotationMatrix", rotationMatrix_spacecraft);
 	this->getShader(0).setMat4("translateMatrix", translateMatrix_spacecraft);
@@ -114,6 +116,10 @@ void Window::paintGL(void)
 
 	this->getTexture(0).bind(0);
 	this->getModel(0).draw();
+
+	this->getTexture(0).unbind();
+	glBindVertexArray(0);
+	glUseProgram(0);
 }
 
 // Create shader
