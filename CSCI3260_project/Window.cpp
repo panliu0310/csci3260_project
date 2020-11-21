@@ -3,6 +3,7 @@
 // Constructor
 Window::Window()
 {
+	std::cout << "Project started" << std::endl;
 	/* Initialize the glfw */
 	if (!glfwInit()) {
 		std::cout << "Failed to initialize GLFW" << std::endl;
@@ -36,7 +37,11 @@ Window::Window()
 	glfwSetCursorPosCallback(this->window, Window::cursor_position_callback);
 	glfwSetMouseButtonCallback(this->window, Window::mouse_button_callback);
 
+	std::cout << "Project started" << std::endl;
+
 	initializedGL();
+
+	std::cout << "Project started" << std::endl;
 
 	while (!glfwWindowShouldClose(this->window)) {
 		/* Render here */
@@ -72,6 +77,8 @@ void Window::sendDataToOpenGL()
 	this->createModel("Resources/spacecraft.obj"); // Spacecraft (0)
 
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
+
+	this->createSkybox(); // Skybox (0)
 }
 
 // Initialize OpenGL
@@ -100,7 +107,7 @@ void Window::paintGL(void)
 	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
 	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 100.0f);
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 1000.0f);
 
 	// Clear
 	glClearColor(0.2f, 0.2f, 0.2f, 0.5f);
@@ -126,18 +133,20 @@ void Window::paintGL(void)
 
 	this->getTexture(0).bind(0);
 	this->getModel(0).draw();
+	this->getTexture(0).unbind();
 
 	// Skybox
 	glDepthFunc(GL_LEQUAL);
+	glDepthMask(GL_FALSE);
 	this->getShader(1).use();
 
 	this->getShader(1).setMat4("view", skyboxViewMatrix);
 	this->getShader(1).setMat4("projection", projectionMatrix);
 
-	this->getSkybox().draw();
+	this->getSkybox(0).draw();
+	glDepthMask(GL_TRUE);
 
 	// Unbind
-	this->getTexture(0).unbind();
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -190,6 +199,22 @@ void Window::removeTexture(unsigned int index)
 	this->textures.erase(this->textures.begin() + index);
 }
 
+// Create skybox
+void Window::createSkybox()
+{
+	this->skyboxes.push_back(Skybox());
+}
+
+// Remove skybox
+void Window::removeSkybox(unsigned int index)
+{
+	if (index > this->skyboxes.size()) {
+		std::cout << "Invalid index" << std::endl;
+		return;
+	}
+	this->skyboxes.erase(this->skyboxes.begin() + index);
+}
+
 // Get status value
 int Window::getStatus() {
 	return this->status;
@@ -214,9 +239,9 @@ Texture Window::getTexture(unsigned int index)
 }
 
 // Get skybox
-Skybox Window::getSkybox()
+Skybox Window::getSkybox(unsigned int index)
 {
-	return this->skybox;
+	return this->skyboxes[index];
 }
 
 // Frame buffer callback

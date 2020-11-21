@@ -17,7 +17,7 @@ class Window
     std::vector<Shader> shaders;
     std::vector<Model> models;
     std::vector<Texture> textures;
-    Skybox skybox;
+    std::vector<Skybox> skyboxes;
 
   // Functions
   public:
@@ -33,6 +33,8 @@ class Window
     void removeModel(unsigned int index);
     void createTexture(const char* texturePath);
     void removeTexture(unsigned int index);
+    void createSkybox();
+    void removeSkybox(unsigned int index);
 
   // Getters
   public:
@@ -40,7 +42,7 @@ class Window
     Shader getShader(unsigned int index);
     Model getModel(unsigned int index);
     Texture getTexture(unsigned int index);
-    Skybox getSkybox();
+    Skybox getSkybox(unsigned int index);
 
   // Callbacks
   public:
