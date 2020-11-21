@@ -66,9 +66,12 @@ void Window::get_OpenGL_info()
 // Send data to OpenGL
 void Window::sendDataToOpenGL()
 {
-	this->createShader("Shaders/vertexShader.glsl", "Shaders/fragmentShader.glsl");
-	this->createModel("Resources/spacecraft.obj");
-	this->createTexture("Resources/texture/spacecraftTexture.bmp");
+	this->createShader("Shaders/modelVertex.glsl", "Shaders/modelFragment.glsl");   // Model shader (0)
+	this->createShader("Shaders/skyboxVertex.glsl", "Shaders/skyboxFragment.glsl"); // Skybox shader (1)
+
+	this->createModel("Resources/spacecraft.obj"); // Spacecraft (0)
+
+	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
 }
 
 // Initialize OpenGL
@@ -88,25 +91,32 @@ void Window::initializedGL(void)
 // Paint OpenGL
 void Window::paintGL(void)
 {
+	// Vectors and matrices
+	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
+	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
+
+	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
+	glm::mat4 rotationMatrix_spacecraft = glm::mat4(1.0f);
+	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
+	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 100.0f);
+
+	// Clear
 	glClearColor(0.2f, 0.2f, 0.2f, 0.5f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glDepthFunc(GL_LESS);
+
+	// Model
 	this->getShader(0).use();
 
-	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	this->getShader(0).setVec3("eyePositionWorld", eyePosition);
-	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
 	this->getShader(0).setVec3("dirlight.direction", lightPosition);
 	this->getShader(0).setFloat("dirlight.intensity", 1.0f);
 	this->getShader(0).setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 	this->getShader(0).setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 	this->getShader(0).setFloat("material.shininess", 32.0f);
-
-	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
-	glm::mat4 rotationMatrix_spacecraft = glm::mat4(1.0f);
-	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
-	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 100.0f);
 
 	this->getShader(0).setMat4("scaleMatrix", scaleMatrix_spacecraft);
 	this->getShader(0).setMat4("rotationMatrix", rotationMatrix_spacecraft);
@@ -117,6 +127,16 @@ void Window::paintGL(void)
 	this->getTexture(0).bind(0);
 	this->getModel(0).draw();
 
+	// Skybox
+	glDepthFunc(GL_LEQUAL);
+	this->getShader(1).use();
+
+	this->getShader(1).setMat4("view", skyboxViewMatrix);
+	this->getShader(1).setMat4("projection", projectionMatrix);
+
+	this->getSkybox().draw();
+
+	// Unbind
 	this->getTexture(0).unbind();
 	glBindVertexArray(0);
 	glUseProgram(0);
@@ -191,6 +211,12 @@ Model Window::getModel(unsigned int index)
 Texture Window::getTexture(unsigned int index)
 {
 	return this->textures[index];
+}
+
+// Get skybox
+Skybox Window::getSkybox()
+{
+	return this->skybox;
 }
 
 // Frame buffer callback

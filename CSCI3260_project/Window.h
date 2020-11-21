@@ -1,6 +1,7 @@
 #pragma once
 #include "Model.h"
 #include "Shader.h"
+#include "Skybox.h"
 
 class Window
 {
@@ -16,6 +17,7 @@ class Window
     std::vector<Shader> shaders;
     std::vector<Model> models;
     std::vector<Texture> textures;
+    Skybox skybox;
 
   // Functions
   public:
@@ -38,6 +40,7 @@ class Window
     Shader getShader(unsigned int index);
     Model getModel(unsigned int index);
     Texture getTexture(unsigned int index);
+    Skybox getSkybox();
 
   // Callbacks
   public:

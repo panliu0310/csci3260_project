@@ -150,8 +150,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
-    <None Include="Shaders\fragmentShader.glsl" />
-    <None Include="Shaders\vertexShader.glsl" />
+    <None Include="Shaders\modelFragment.glsl" />
+    <None Include="Shaders\modelVertex.glsl" />
+    <None Include="Shaders\skyboxFragment.glsl" />
+    <None Include="Shaders\skyboxVertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include.h" />
