@@ -178,7 +178,7 @@ void Window::sendDataToOpenGL()
 	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
-	this->createModel("Resources/spacecraft.obj"); // Spacecraft (0)
+	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -1.0f, -15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f)); // Spacecraft (0)
 
 	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
@@ -206,13 +206,6 @@ void Window::paintGL(void)
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
 
-	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
-	glm::mat4 rotationMatrix_spacecraft = glm::mat4(1.0f);
-	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
-	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)this->width / (float)this->height, 0.1f, 100.0f);
-
 	// Update clock
 	Clock::now = glfwGetTime();
 	Clock::time = Clock::now - Clock::then;
@@ -233,15 +226,28 @@ void Window::paintGL(void)
 	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 	this->getShader(0).setFloat("material.shininess", 32.0f);
 
-	this->getShader(0).setMat4("scaleMatrix", scaleMatrix_spacecraft);
-	this->getShader(0).setMat4("rotationMatrix", rotationMatrix_spacecraft);
-	this->getShader(0).setMat4("translateMatrix", translateMatrix_spacecraft);
-	this->getShader(0).setMat4("viewMatrix", viewMatrix);
-	this->getShader(0).setMat4("projectionMatrix", projectionMatrix);
+	// Spaceship-dependent matrices
+	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)this->width / (float)this->height, 0.1f, 100.0f);
+	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
 
-	this->getTexture(0).bind(0);
-	this->getModel(0).draw();
-	this->getTexture(0).unbind();
+	for (Model model : this->models) {
+		// Shader uniform values
+		glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), model.getScale());
+		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().y), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().z), glm::vec3(0, 0, 1));
+		glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), model.getPosition());
+
+		this->getShader(0).setMat4("scaleMatrix", scaleMatrix);
+		this->getShader(0).setMat4("rotationMatrix", rotationMatrix);
+		this->getShader(0).setMat4("translateMatrix", translateMatrix);
+		this->getShader(0).setMat4("viewMatrix", viewMatrix);
+		this->getShader(0).setMat4("projectionMatrix", projectionMatrix);
+
+		// Draw with texture
+		this->getTexture(model.getTexture()).bind(0);
+		model.draw();
+		this->getTexture(model.getTexture()).unbind();
+	}
 
 	// Skybox
 	glDepthFunc(GL_LEQUAL);
@@ -282,9 +288,9 @@ void Window::removeShader(uint index)
 }
 
 // Create model
-void Window::createModel(const char* objPath)
+void Window::createModel(const char* objPath, glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scl = glm::vec3(1.0f, 1.0f, 1.0f), unsigned int txtr = 0)
 {
-	Model model(objPath);
+	Model model(objPath, pos, rot, scl, txtr);
 	this->models.push_back(model);
 }
 

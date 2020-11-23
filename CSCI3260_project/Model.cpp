@@ -11,7 +11,7 @@ struct V {
 };
 
 // Constructor
-Model::Model(const char* objPath)
+Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr)
 {
 	std::vector<glm::vec3> temp_positions;
 	std::vector<glm::vec2> temp_uvs;
@@ -104,6 +104,11 @@ Model::Model(const char* objPath)
 	glGenBuffers(1, &this->eboID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
+
+	this->setPosition(pos);
+	this->setRotation(rot);
+	this->setScale(scl);
+	this->setTexture(txtr);
 }
 
 // Draw function
@@ -112,4 +117,52 @@ void Model::draw()
 	glBindVertexArray(this->vaoID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
 	glDrawElements(GL_TRIANGLES, GLsizei(this->indices.size()), GL_UNSIGNED_INT, 0);
+}
+
+// Get position
+glm::vec3 Model::getPosition()
+{
+	return this->position;
+}
+
+// Get rotation
+glm::vec3 Model::getRotation()
+{
+	return this->rotation;
+}
+
+// Get scale
+glm::vec3 Model::getScale()
+{
+	return this->scale;
+}
+
+// Get texture
+unsigned int Model::getTexture()
+{
+	return this->texture;
+}
+
+// Set position
+void Model::setPosition(glm::vec3 pos)
+{
+	this->position = pos;
+}
+
+// Set rotation
+void Model::setRotation(glm::vec3 rot)
+{
+	this->rotation = rot;
+}
+
+// Set scale
+void Model::setScale(glm::vec3 scl)
+{
+	this->scale = scl;
+}
+
+// Set texture
+void Model::setTexture(unsigned int txtr) 
+{
+	this->texture = txtr;
 }

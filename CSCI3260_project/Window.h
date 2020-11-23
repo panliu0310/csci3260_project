@@ -29,7 +29,7 @@ class Window
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
     void removeShader(uint index);
-    void createModel(const char* objPath);
+    void createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr);
     void removeModel(uint index);
     void createTexture(const char* texturePath);
     void removeTexture(uint index);
