@@ -56,8 +56,7 @@ namespace Skybox
 		"Resources/texture/skybox/front.bmp",
 		"Resources/texture/skybox/back.bmp"
 	};
-	GLuint vaoID{}, vboID{}, textureID{};
-	int width = 0, height = 0, nr = 0;
+	GLuint vaoID, vboID, textureID;
 }
 
 // Camera
@@ -71,8 +70,8 @@ namespace Camera
 // Clock
 namespace Clock
 {
-	float time = 0.0f;
-	float now, then = 0.0f;
+	double time = 0;
+	double now, then = 0;
 }
 
 // Constructor
@@ -142,24 +141,27 @@ void Window::get_OpenGL_info()
 // Send data to OpenGL
 void Window::sendDataToOpenGL()
 {
+	// Shaders
+	this->createShader("Shaders/modelVertex.glsl", "Shaders/modelFragment.glsl");   // Model shader (0)
+	this->createShader("Shaders/skyboxVertex.glsl", "Shaders/skyboxFragment.glsl"); // Skybox shader (1)
+
 	// Build skybox
 	glGenVertexArrays(1, &Skybox::vaoID);
-	glBindVertexArray(Skybox::vaoID);
 	glGenBuffers(1, &Skybox::vboID);
+	glBindVertexArray(Skybox::vaoID);
 	glBindBuffer(GL_ARRAY_BUFFER, Skybox::vboID);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(Skybox::vertices), &Skybox::vertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
-	glBindVertexArray(0);
 
 	glGenTextures(1, &Skybox::textureID);
-	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, Skybox::textureID);
 
+	int w, h, nr;
 	for (int i = 0; i < Skybox::faces.size(); i++) {
-		unsigned char* data = stbi_load(Skybox::faces[i], &Skybox::width, &Skybox::height, &Skybox::nr, 0);
+		unsigned char* data = stbi_load(Skybox::faces[i], &w, &h, &nr, 0);
 		if (data) {
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Skybox::width, Skybox::height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
 		else {
@@ -173,19 +175,14 @@ void Window::sendDataToOpenGL()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	std::cout << "Load skybox successfully!" << std::endl;
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-	// Shaders
-	this->createShader("Shaders/modelVertex.glsl", "Shaders/modelFragment.glsl");   // Model shader (0)
-	this->createShader("Shaders/skyboxVertex.glsl", "Shaders/skyboxFragment.glsl"); // Skybox shader (1)
+	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
 	this->createModel("Resources/spacecraft.obj"); // Spacecraft (0)
 
 	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
+	this->createTexture("Resources/texture/leisure_spacecraftTexture.bmp"); // Leisure spacecraft (1)
 }
 
 // Initialize OpenGL
@@ -212,9 +209,9 @@ void Window::paintGL(void)
 	glm::mat4 scaleMatrix_spacecraft = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 	glm::mat4 rotationMatrix_spacecraft = glm::mat4(1.0f);
 	glm::mat4 translateMatrix_spacecraft = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, -15.0f));
-	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 1000.0f);
+	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)this->width / (float)this->height, 0.1f, 100.0f);
 
 	// Update clock
 	Clock::now = glfwGetTime();
@@ -222,7 +219,7 @@ void Window::paintGL(void)
 	Clock::then = Clock::now;
 
 	// Clear
-	glClearColor(0.2f, 0.2f, 0.2f, 0.5f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDepthFunc(GL_LESS);
 
@@ -249,7 +246,6 @@ void Window::paintGL(void)
 
 	// Skybox
 	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_FALSE);
 	this->getShader(1).use();
 
 	this->getShader(1).setMat4("view", skyboxViewMatrix);
@@ -259,10 +255,9 @@ void Window::paintGL(void)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, Skybox::textureID);
 	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	// Unbind
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-	glDepthMask(GL_TRUE);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -270,11 +265,12 @@ void Window::paintGL(void)
 // Create shader
 void Window::createShader(const char* vertexPath, const char* fragmentPath)
 {
-	this->shaders.push_back(Shader(vertexPath, fragmentPath));
+	Shader shader(vertexPath, fragmentPath);
+	this->shaders.push_back(shader);
 }
 
 // Remove shader
-void Window::removeShader(unsigned int index)
+void Window::removeShader(uint index)
 {
 	if (index > this->shaders.size()) {
 		std::cout << "Invalid index" << std::endl;
@@ -286,11 +282,12 @@ void Window::removeShader(unsigned int index)
 // Create model
 void Window::createModel(const char* objPath)
 {
-	this->models.push_back(Model(objPath));
+	Model model(objPath);
+	this->models.push_back(model);
 }
 
 // Remove model
-void Window::removeModel(unsigned int index)
+void Window::removeModel(uint index)
 {
 	if (index > this->models.size()) {
 		std::cout << "Invalid index" << std::endl;
@@ -302,11 +299,12 @@ void Window::removeModel(unsigned int index)
 // Create texture
 void Window::createTexture(const char* texturePath)
 {
-	this->textures.push_back(Texture(texturePath));
+	Texture texture(texturePath);
+	this->textures.push_back(texture);
 }
 
 // Remove texture
-void Window::removeTexture(unsigned int index)
+void Window::removeTexture(uint index)
 {
 	if (index > this->textures.size()) {
 		std::cout << "Invalid index" << std::endl;
@@ -321,20 +319,29 @@ int Window::getStatus() {
 }
 
 // Get shader
-Shader Window::getShader(unsigned int index)
+Shader Window::getShader(uint index)
 {
+	if (index > this->shaders.size()) {
+		std::cout << "Invalid index" << std::endl;
+	}
 	return this->shaders[index];
 }
 
 // Get model
-Model Window::getModel(unsigned int index)
+Model Window::getModel(uint index)
 {
+	if (index > this->models.size()) {
+		std::cout << "Invalid index" << std::endl;
+	}
 	return this->models[index];
 }
 
 // Get texture
-Texture Window::getTexture(unsigned int index)
+Texture Window::getTexture(uint index)
 {
+	if (index > this->textures.size()) {
+		std::cout << "Invalid index" << std::endl;
+	}
 	return this->textures[index];
 }
 
@@ -365,5 +372,10 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 // Keyboard key callback
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-
+	if (key == GLFW_KEY_W && action == GLFW_REPEAT) { Camera::position.z -= 0.1f; }
+	if (key == GLFW_KEY_A && action == GLFW_REPEAT) { Camera::position.x -= 0.1f; }
+	if (key == GLFW_KEY_S && action == GLFW_REPEAT) { Camera::position.z += 0.1f; }
+	if (key == GLFW_KEY_D && action == GLFW_REPEAT) { Camera::position.x += 0.1f; }
+	if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT) { Camera::position.y += 0.1f; }
+	if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT) { Camera::position.y -= 0.1f; }
 }

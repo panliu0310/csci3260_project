@@ -2,6 +2,8 @@
 #include "Model.h"
 #include "Shader.h"
 
+typedef unsigned int uint;
+
 class Window
 {
   // Constructor
@@ -26,18 +28,18 @@ class Window
 
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
-    void removeShader(unsigned int index);
+    void removeShader(uint index);
     void createModel(const char* objPath);
-    void removeModel(unsigned int index);
+    void removeModel(uint index);
     void createTexture(const char* texturePath);
-    void removeTexture(unsigned int index);
+    void removeTexture(uint index);
 
   // Getters
   public:
     int getStatus();
-    Shader getShader(unsigned int index);
-    Model getModel(unsigned int index);
-    Texture getTexture(unsigned int index);
+    Shader getShader(uint index);
+    Model getModel(uint index);
+    Texture getTexture(uint index);
 
   // Callbacks
   public:
