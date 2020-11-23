@@ -1,5 +1,80 @@
 #include "Window.h"
 
+// Skybox
+namespace Skybox
+{
+	std::vector<GLfloat> vertices =
+	{
+				-1.0f,  1.0f, -1.0f,
+				-1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f, -1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+
+				-1.0f, -1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f,
+				-1.0f, -1.0f,  1.0f,
+
+				-1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f, -1.0f,
+				 1.0f,  1.0f,  1.0f,
+				 1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f,  1.0f,
+				-1.0f,  1.0f, -1.0f,
+
+				-1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f, -1.0f,
+				 1.0f, -1.0f, -1.0f,
+				-1.0f, -1.0f,  1.0f,
+				 1.0f, -1.0f,  1.0f
+	};
+	std::vector<const GLchar*> faces =
+	{
+		"Resources/texture/skybox/right.bmp",
+		"Resources/texture/skybox/left.bmp",
+		"Resources/texture/skybox/top.bmp",
+		"Resources/texture/skybox/bottom.bmp",
+		"Resources/texture/skybox/front.bmp",
+		"Resources/texture/skybox/back.bmp"
+	};
+	GLuint vaoID{}, vboID{}, textureID{};
+	int width = 0, height = 0, nr = 0;
+}
+
+// Camera
+namespace Camera
+{
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	float zoom = 1.0f;
+}
+
+// Clock
+namespace Clock
+{
+	float time = 0.0f;
+	float now, then = 0.0f;
+}
+
 // Constructor
 Window::Window()
 {
@@ -37,11 +112,7 @@ Window::Window()
 	glfwSetCursorPosCallback(this->window, Window::cursor_position_callback);
 	glfwSetMouseButtonCallback(this->window, Window::mouse_button_callback);
 
-	std::cout << "Project started" << std::endl;
-
 	initializedGL();
-
-	std::cout << "Project started" << std::endl;
 
 	while (!glfwWindowShouldClose(this->window)) {
 		/* Render here */
@@ -71,14 +142,50 @@ void Window::get_OpenGL_info()
 // Send data to OpenGL
 void Window::sendDataToOpenGL()
 {
+	// Build skybox
+	glGenVertexArrays(1, &Skybox::vaoID);
+	glBindVertexArray(Skybox::vaoID);
+	glGenBuffers(1, &Skybox::vboID);
+	glBindBuffer(GL_ARRAY_BUFFER, Skybox::vboID);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Skybox::vertices), &Skybox::vertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
+	glBindVertexArray(0);
+
+	glGenTextures(1, &Skybox::textureID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, Skybox::textureID);
+
+	for (int i = 0; i < Skybox::faces.size(); i++) {
+		unsigned char* data = stbi_load(Skybox::faces[i], &Skybox::width, &Skybox::height, &Skybox::nr, 0);
+		if (data) {
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, Skybox::width, Skybox::height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			stbi_image_free(data);
+		}
+		else {
+			std::cout << "Cannot load skybox texture" << std::endl;
+			exit(1);
+		}
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	std::cout << "Load skybox successfully!" << std::endl;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	// Shaders
 	this->createShader("Shaders/modelVertex.glsl", "Shaders/modelFragment.glsl");   // Model shader (0)
 	this->createShader("Shaders/skyboxVertex.glsl", "Shaders/skyboxFragment.glsl"); // Skybox shader (1)
 
+	// Models
 	this->createModel("Resources/spacecraft.obj"); // Spacecraft (0)
 
+	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
-
-	this->createSkybox(); // Skybox (0)
 }
 
 // Initialize OpenGL
@@ -108,6 +215,11 @@ void Window::paintGL(void)
 	glm::mat4 viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
 	glm::mat4 projectionMatrix = glm::perspective(45.0f, +8.0f / +6.0f, 1.0f, 1000.0f);
+
+	// Update clock
+	Clock::now = glfwGetTime();
+	Clock::time = Clock::now - Clock::then;
+	Clock::then = Clock::now;
 
 	// Clear
 	glClearColor(0.2f, 0.2f, 0.2f, 0.5f);
@@ -143,10 +255,14 @@ void Window::paintGL(void)
 	this->getShader(1).setMat4("view", skyboxViewMatrix);
 	this->getShader(1).setMat4("projection", projectionMatrix);
 
-	this->getSkybox(0).draw();
-	glDepthMask(GL_TRUE);
+	glBindVertexArray(Skybox::vaoID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, Skybox::textureID);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
 
 	// Unbind
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	glDepthMask(GL_TRUE);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
@@ -199,22 +315,6 @@ void Window::removeTexture(unsigned int index)
 	this->textures.erase(this->textures.begin() + index);
 }
 
-// Create skybox
-void Window::createSkybox()
-{
-	this->skyboxes.push_back(Skybox());
-}
-
-// Remove skybox
-void Window::removeSkybox(unsigned int index)
-{
-	if (index > this->skyboxes.size()) {
-		std::cout << "Invalid index" << std::endl;
-		return;
-	}
-	this->skyboxes.erase(this->skyboxes.begin() + index);
-}
-
 // Get status value
 int Window::getStatus() {
 	return this->status;
@@ -236,12 +336,6 @@ Model Window::getModel(unsigned int index)
 Texture Window::getTexture(unsigned int index)
 {
 	return this->textures[index];
-}
-
-// Get skybox
-Skybox Window::getSkybox(unsigned int index)
-{
-	return this->skyboxes[index];
 }
 
 // Frame buffer callback

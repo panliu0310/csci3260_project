@@ -30,9 +30,6 @@
     <ClCompile Include="Model.cpp">
       <Filter>來源檔案</Filter>
     </ClCompile>
-    <ClCompile Include="Skybox.cpp">
-      <Filter>來源檔案</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore">
@@ -57,9 +54,6 @@
       <Filter>標頭檔</Filter>
     </ClInclude>
     <ClInclude Include="include.h">
-      <Filter>標頭檔</Filter>
-    </ClInclude>
-    <ClInclude Include="Skybox.h">
       <Filter>標頭檔</Filter>
     </ClInclude>
   </ItemGroup>
