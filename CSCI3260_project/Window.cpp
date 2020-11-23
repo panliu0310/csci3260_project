@@ -3,7 +3,7 @@
 // Skybox
 namespace Skybox
 {
-	std::vector<GLfloat> vertices =
+	GLfloat vertices[108] =
 	{
 				-1.0f,  1.0f, -1.0f,
 				-1.0f, -1.0f, -1.0f,
@@ -221,7 +221,6 @@ void Window::paintGL(void)
 	// Clear
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glDepthFunc(GL_LESS);
 
 	// Model
 	this->getShader(0).use();
@@ -246,6 +245,7 @@ void Window::paintGL(void)
 
 	// Skybox
 	glDepthFunc(GL_LEQUAL);
+	glDepthMask(GL_FALSE);
 	this->getShader(1).use();
 
 	this->getShader(1).setMat4("view", skyboxViewMatrix);
@@ -258,6 +258,8 @@ void Window::paintGL(void)
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	// Unbind
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }
