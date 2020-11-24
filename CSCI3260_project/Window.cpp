@@ -67,11 +67,19 @@ namespace Camera
 	float zoom = 1.0f;
 }
 
+// Spacecraft
+namespace Spacecraft
+{
+	glm::vec3 position = glm::vec3(0.0f, -6.0f, -15.0f);
+	glm::vec3 rotation = glm::vec3(15.0f, 180.0f, 0.0f);
+}
+
 // Clock
 namespace Clock
 {
 	double time = 0;
 	double now, then = 0;
+	double delta = 0;
 }
 
 // Constructor
@@ -178,7 +186,8 @@ void Window::sendDataToOpenGL()
 	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
-	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -6.0f, -15.0f), glm::vec3(15.0f, 180.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft (0)
+	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft (0)
+	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -4.0f, -20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), 1); // Test spacecraft (1)
 
 	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
@@ -206,6 +215,10 @@ void Window::paintGL(void)
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
 
+	// Update spacecraft
+	this->models[0].setPosition(Spacecraft::position);
+	this->models[0].setRotation(Spacecraft::rotation);
+
 	// Calculate local directions and camera
 	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().x - 15.0f), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().z), glm::vec3(0, 0, 1));
 	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
@@ -221,7 +234,8 @@ void Window::paintGL(void)
 
 	// Update clock
 	Clock::now = glfwGetTime();
-	Clock::time = Clock::now - Clock::then;
+	Clock::delta = Clock::now - Clock::then;
+	Clock::time += Clock::delta;
 	Clock::then = Clock::now;
 
 	// Clear
@@ -388,5 +402,12 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 // Keyboard key callback
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.x - 15.0f), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.z), glm::vec3(0, 0, 1));
+	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) { Spacecraft::position.z--; }
+	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) { Spacecraft::position.z++; }
+	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) { }
+	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) { }
 }
