@@ -63,7 +63,7 @@ namespace Skybox
 namespace Camera
 {
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
 	float zoom = 1.0f;
 }
 
@@ -178,7 +178,7 @@ void Window::sendDataToOpenGL()
 	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
-	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -1.0f, -15.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f)); // Spacecraft (0)
+	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -6.0f, -15.0f), glm::vec3(15.0f, 180.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft (0)
 
 	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
@@ -206,6 +206,19 @@ void Window::paintGL(void)
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
 
+	// Calculate local directions and camera
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().x - 15.0f), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().z), glm::vec3(0, 0, 1));
+	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
+
+	Camera::position = this->getModel(0).getPosition() + glm::vec3(0.0f, 6.0f, 15.0f);
+	Camera::direction = front;
+
+	// Spaceship-dependent matrices
+	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + Camera::direction, glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 projectionMatrix = glm::perspective(45.0f / Camera::zoom, (float)this->width / (float)this->height, 0.1f, 100.0f);
+	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
+
 	// Update clock
 	Clock::now = glfwGetTime();
 	Clock::time = Clock::now - Clock::then;
@@ -225,11 +238,6 @@ void Window::paintGL(void)
 	this->getShader(0).setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 	this->getShader(0).setFloat("material.shininess", 32.0f);
-
-	// Spaceship-dependent matrices
-	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f, (float)this->width / (float)this->height, 0.1f, 100.0f);
-	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
 
 	for (Model model : this->models) {
 		// Shader uniform values
@@ -288,7 +296,7 @@ void Window::removeShader(uint index)
 }
 
 // Create model
-void Window::createModel(const char* objPath, glm::vec3 pos = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 rot = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 scl = glm::vec3(1.0f, 1.0f, 1.0f), unsigned int txtr = 0)
+void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr)
 {
 	Model model(objPath, pos, rot, scl, txtr);
 	this->models.push_back(model);
@@ -380,10 +388,5 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 // Keyboard key callback
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_W && action == GLFW_REPEAT) { Camera::position.z -= 0.1f; }
-	if (key == GLFW_KEY_A && action == GLFW_REPEAT) { Camera::position.x -= 0.1f; }
-	if (key == GLFW_KEY_S && action == GLFW_REPEAT) { Camera::position.z += 0.1f; }
-	if (key == GLFW_KEY_D && action == GLFW_REPEAT) { Camera::position.x += 0.1f; }
-	if (key == GLFW_KEY_SPACE && action == GLFW_REPEAT) { Camera::position.y += 0.1f; }
-	if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_REPEAT) { Camera::position.y -= 0.1f; }
+	
 }
