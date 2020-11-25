@@ -62,7 +62,7 @@ namespace Skybox
 // Camera
 namespace Camera
 {
-	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 position = glm::vec3(0.0f, 6.0f, 15.0f);
 	glm::vec3 direction = glm::vec3(0.0f, 0.0f, -1.0f);
 	float zoom = 1.0f;
 }
@@ -70,8 +70,8 @@ namespace Camera
 // Spacecraft
 namespace Spacecraft
 {
-	glm::vec3 position = glm::vec3(0.0f, -6.0f, -15.0f);
-	glm::vec3 rotation = glm::vec3(15.0f, 180.0f, 0.0f);
+	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 rotation = glm::vec3(0.0f, 180.0f, 0.0f);
 }
 
 // Clock
@@ -80,6 +80,13 @@ namespace Clock
 	double time = 0;
 	double now, then = 0;
 	double delta = 0;
+}
+
+// Controls
+namespace Controls
+{
+	bool leftMouse = false;
+	double posX = 0, posY = 0;
 }
 
 // Constructor
@@ -186,12 +193,17 @@ void Window::sendDataToOpenGL()
 	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
-	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft (0)
-	this->createModel("Resources/spacecraft.obj", glm::vec3(0.0f, -4.0f, -20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.01f, 0.01f, 0.01f), 1); // Test spacecraft (1)
+	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft
+	for (int i = 1; i <= 3; i++)
+	{
+		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));
+	}
 
 	// Textures
 	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
 	this->createTexture("Resources/texture/leisure_spacecraftTexture.bmp"); // Leisure spacecraft (1)
+	this->createTexture("Resources/texture/alienTexture.bmp"); // Alien (2)
+	this->createTexture("Resources/texture/colorful_alien_vehicleTexture.bmp"); // Colourful alien (3)
 }
 
 // Initialize OpenGL
@@ -220,16 +232,16 @@ void Window::paintGL(void)
 	this->models[0].setRotation(Spacecraft::rotation);
 
 	// Calculate local directions and camera
-	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().x - 15.0f), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().z), glm::vec3(0, 0, 1));
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().z), glm::vec3(0, 0, 1));
 	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	Camera::position = this->getModel(0).getPosition() + glm::vec3(0.0f, 6.0f, 15.0f);
+	Camera::position = this->getModel(0).getPosition() + glm::vec3(worldMatrix * glm::vec4(glm::vec3(0.0f, 6.0f, 15.0f), 1.0f));
 	Camera::direction = front;
 
 	// Spaceship-dependent matrices
 	glm::mat4 viewMatrix = glm::lookAt(Camera::position, Camera::position + Camera::direction, glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 projectionMatrix = glm::perspective(45.0f / Camera::zoom, (float)this->width / (float)this->height, 0.1f, 100.0f);
+	glm::mat4 projectionMatrix = glm::perspective(45.0f / Camera::zoom, (float)this->width / (float)this->height, 0.1f, 1000.0f);
 	glm::mat4 skyboxViewMatrix = glm::mat4(glm::mat3(viewMatrix));
 
 	// Update clock
@@ -326,6 +338,41 @@ void Window::removeModel(uint index)
 	this->models.erase(this->models.begin() + index);
 }
 
+// Create alien
+void Window::createAlien(glm::vec3 position)
+{
+	Alien alien;
+	alien.index = this->getModelSize();
+	alien.position = position;
+	alien.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
+
+	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2);                              // Alien vehicle (index)
+	this->createModel("Resources/alienpeople.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2); // Alien people (index + 1)
+
+	this->aliens.push_back(alien);
+}
+
+// Remove alien
+void Window::removeAlien(uint index)
+{
+	if (index > this->aliens.size()) {
+		std::cout << "Invalid index" << std::endl;
+		return;
+	}
+
+	this->removeModel(this->aliens[index].index + 1);
+	this->removeModel(this->aliens[index].index);
+
+	for (Alien alien : this->aliens)
+	{
+		if (alien.index > this->aliens[index].index) {
+			alien.index -= 2;
+		}
+	}
+
+	this->aliens.erase(this->aliens.begin() + index);
+}
+
 // Create texture
 void Window::createTexture(const char* texturePath)
 {
@@ -344,8 +391,15 @@ void Window::removeTexture(uint index)
 }
 
 // Get status value
-int Window::getStatus() {
+int Window::getStatus()
+{
 	return this->status;
+}
+
+// Get model vector size
+int Window::getModelSize()
+{
+	return this->models.size();
 }
 
 // Get shader
@@ -366,6 +420,15 @@ Model Window::getModel(uint index)
 	return this->models[index];
 }
 
+// Get alien
+Alien Window::getAlien(uint index)
+{
+	if (index > this->aliens.size()) {
+		std::cout << "Invalid index" << std::endl;
+	}
+	return this->aliens[index];
+}
+
 // Get texture
 Texture Window::getTexture(uint index)
 {
@@ -384,13 +447,21 @@ void Window::framebuffer_size_callback(GLFWwindow* window, int width, int height
 // Mouse button callback
 void Window::mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-
+	Controls::leftMouse = button == GLFW_MOUSE_BUTTON_LEFT ? action == GLFW_PRESS : Controls::leftMouse;
 }
 
 // Cursor position callback
 void Window::cursor_position_callback(GLFWwindow* window, double x, double y)
 {
+	if (Controls::leftMouse)
+	{
+		float xoffset = float(x - Controls::posX);
+		const float sensitivity = 0.1f;
+		xoffset *= sensitivity;
 
+		Spacecraft::rotation.y += xoffset;
+	}
+	Controls::posX = x;
 }
 
 // Mouse scroll callback
@@ -402,12 +473,16 @@ void Window::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 // Keyboard key callback
 void Window::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.x - 15.0f), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.z), glm::vec3(0, 0, 1));
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(Spacecraft::rotation.z), glm::vec3(0, 0, 1));
 	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) { Spacecraft::position.z--; }
-	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) { Spacecraft::position.z++; }
-	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) { }
-	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) { }
+	const float sensitivity = 0.5f;
+	front *= sensitivity;
+	right *= sensitivity;
+
+	if (key == GLFW_KEY_UP && action == GLFW_REPEAT) { Spacecraft::position += front; }
+	if (key == GLFW_KEY_DOWN && action == GLFW_REPEAT) { Spacecraft::position -= front; }
+	if (key == GLFW_KEY_LEFT && action == GLFW_REPEAT) { Spacecraft::position -= right; }
+	if (key == GLFW_KEY_RIGHT && action == GLFW_REPEAT) { Spacecraft::position += right; }
 }

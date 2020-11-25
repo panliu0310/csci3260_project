@@ -1,8 +1,15 @@
 #pragma once
+#include "include.h"
 #include "Model.h"
 #include "Shader.h"
 
 typedef unsigned int uint;
+
+struct Alien
+{
+  uint index;
+  glm::vec3 position, rotation;
+};
 
 class Window
 {
@@ -17,6 +24,7 @@ class Window
     const int width = 800, height = 600;
     std::vector<Shader> shaders;
     std::vector<Model> models;
+    std::vector<Alien> aliens;
     std::vector<Texture> textures;
 
   // Functions
@@ -29,16 +37,25 @@ class Window
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
     void removeShader(uint index);
+
     void createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr);
     void removeModel(uint index);
+
+    void createAlien(glm::vec3 position);
+    void removeAlien(uint index);
+
     void createTexture(const char* texturePath);
     void removeTexture(uint index);
+    
 
   // Getters
   public:
     int getStatus();
+    int getModelSize();
+
     Shader getShader(uint index);
     Model getModel(uint index);
+    Alien getAlien(uint index);
     Texture getTexture(uint index);
 
   // Callbacks
