@@ -1,3 +1,4 @@
+#define DEBUG_MODE false
 #include "Model.h"
 
 struct V {
@@ -19,7 +20,7 @@ Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, u
 	std::map<V, unsigned int> temp_vertices;
 
 	unsigned int num_vertices = 0;
-	std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl;
+	if (DEBUG_MODE) { std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl; }
 
 	std::ifstream file;
 	file.open(objPath);
@@ -77,7 +78,7 @@ Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, u
 		}
 	}
 	file.close();
-	std::cout << "There are " << num_vertices << " vertices in the obj file.\n" << std::endl;
+	if (DEBUG_MODE) { std::cout << "There are " << num_vertices << " vertices in the obj file.\n" << std::endl; }
 
 	glGenVertexArrays(1, &this->vaoID);
 	glBindVertexArray(this->vaoID);

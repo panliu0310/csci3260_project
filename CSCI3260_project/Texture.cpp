@@ -1,4 +1,5 @@
 #define STB_IMAGE_IMPLEMENTATION
+#define DEBUG_MODE false
 #include "Texture.h"
 
 // Constructor
@@ -29,7 +30,7 @@ Texture::Texture(const char* texturePath)
 		exit(1);
 	}
 
-	std::cout << "Load " << texturePath << " successfully!" << std::endl;
+	if (DEBUG_MODE) { std::cout << "Load " << texturePath << " successfully!" << std::endl; }
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

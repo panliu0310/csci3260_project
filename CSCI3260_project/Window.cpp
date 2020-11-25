@@ -92,7 +92,6 @@ namespace Controls
 // Constructor
 Window::Window()
 {
-	std::cout << "Project started" << std::endl;
 	/* Initialize the glfw */
 	if (!glfwInit()) {
 		std::cout << "Failed to initialize GLFW" << std::endl;
@@ -190,20 +189,28 @@ void Window::sendDataToOpenGL()
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	std::cout << "\nLoad skybox successfully!" << std::endl;
 
 	// Models
-	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0); // Spacecraft
-	for (int i = 1; i <= 3; i++)
-	{
-		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));
+	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0);              // Spacecraft (0)
+	for (int i = 1; i <= 3; i++) {
+		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                          // Aliens (1-6)
+		}
+	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (7)
+	for (int j = 0; j <= 300; j++) {
+		float radius = glm::linearRand(80.0f, 110.0f), angle = glm::radians(glm::linearRand(0.0f, 360.0f)), scale = glm::linearRand(1.0f, 2.0f);
+		glm::vec3 pos = this->getModel(7).getPosition() + glm::vec3(radius * glm::sin(angle), 10.0f, radius * glm::cos(angle));
+		this->createModel("Resources/rock.obj", pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(scale, scale, scale), 6);                            // Rock (8-307)
 	}
 
 	// Textures
-	this->createTexture("Resources/texture/spacecraftTexture.bmp"); // Spacecraft (0)
-	this->createTexture("Resources/texture/leisure_spacecraftTexture.bmp"); // Leisure spacecraft (1)
-	this->createTexture("Resources/texture/alienTexture.bmp"); // Alien (2)
+	this->createTexture("Resources/texture/spacecraftTexture.bmp");             // Spacecraft (0)
+	this->createTexture("Resources/texture/leisure_spacecraftTexture.bmp");     // Leisure spacecraft (1)
+	this->createTexture("Resources/texture/alienTexture.bmp");                  // Alien (2)
 	this->createTexture("Resources/texture/colorful_alien_vehicleTexture.bmp"); // Colourful alien (3)
+	this->createTexture("Resources/texture/planetTexture.bmp");                 // Planet (4)
+	this->createTexture("Resources/texture/planetNormal.bmp");                  // Planet normal (5)
+	this->createTexture("Resources/texture/rockTexture.bmp");                   // Rock (6)
+	this->createTexture("Resources/texture/chickenTexture.bmp");                // Chicken (7)
 }
 
 // Initialize OpenGL
@@ -399,7 +406,7 @@ int Window::getStatus()
 // Get model vector size
 int Window::getModelSize()
 {
-	return this->models.size();
+	return int(this->models.size());
 }
 
 // Get shader
@@ -459,7 +466,7 @@ void Window::cursor_position_callback(GLFWwindow* window, double x, double y)
 		const float sensitivity = 0.1f;
 		xoffset *= sensitivity;
 
-		Spacecraft::rotation.y += xoffset;
+		Spacecraft::rotation.y -= xoffset;
 	}
 	Controls::posX = x;
 }
