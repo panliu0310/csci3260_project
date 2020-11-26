@@ -1,9 +1,6 @@
 #pragma once
 #include "include.h"
 
-using IV = PFNGLGETSHADERIVPROC;
-using IL = PFNGLGETSHADERINFOLOGPROC;
-
 class Shader
 {
 	// Constructor

@@ -4,8 +4,6 @@
 #include "Model.h"
 #include "Shader.h"
 
-typedef unsigned int uint;
-
 struct Alien
 {
   uint index;

@@ -10,7 +10,12 @@
 
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <cstdlib>
 #include <string>
 #include <vector>
 #include <map>
+
+using uint = unsigned int;
+using IV = PFNGLGETSHADERIVPROC;
+using IL = PFNGLGETSHADERINFOLOGPROC;

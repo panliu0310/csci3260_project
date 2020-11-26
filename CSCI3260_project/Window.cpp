@@ -272,11 +272,20 @@ void Window::paintGL(void)
 	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 	this->getShader(0).setFloat("material.shininess", 32.0f);
 
-	for (Model model : this->models) {
+	for (int i = 0; i < this->getModelSize(); i++) {
+		// Model and filters
+		Model model = this->models[i];
+		std::vector<uint> targets = { 1, 3, 5 };
+		std::vector<uint>::iterator it = std::find(targets.begin(), targets.end(), i);
+
 		// Shader uniform values
 		glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), model.getScale());
 		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().y), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().z), glm::vec3(0, 0, 1));
 		glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), model.getPosition());
+
+		if (it != targets.end()) {
+			this->models[i].setRotation(glm::vec3(0.0f, Clock::time * 90.0f, 0.0f));
+		}
 
 		this->getShader(0).setMat4("scaleMatrix", scaleMatrix);
 		this->getShader(0).setMat4("rotationMatrix", rotationMatrix);
