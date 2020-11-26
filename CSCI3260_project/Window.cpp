@@ -193,13 +193,13 @@ void Window::sendDataToOpenGL()
 	// Models
 	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0);              // Spacecraft (0)
 	for (int i = 1; i <= 3; i++) {
-		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                          // Aliens (1-6)
+		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                          // Aliens (1-9)
 		}
-	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (7)
+	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (10)
 	for (int j = 0; j <= 300; j++) {
 		float radius = glm::linearRand(80.0f, 110.0f), angle = glm::radians(glm::linearRand(0.0f, 360.0f)), scale = glm::linearRand(1.0f, 2.0f);
-		glm::vec3 pos = this->getModel(7).getPosition() + glm::vec3(radius * glm::sin(angle), 10.0f, radius * glm::cos(angle));
-		this->createModel("Resources/rock.obj", pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(scale, scale, scale), 6);                            // Rock (8-307)
+		glm::vec3 pos = this->models[10].getPosition() + glm::vec3(radius * glm::sin(angle), 10.0f, radius * glm::cos(angle));
+		this->createModel("Resources/rock.obj", pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(scale, scale, scale), 6);                            // Rock (11-310)
 	}
 
 	// Textures
@@ -224,7 +224,6 @@ void Window::initializedGL(void)
 	sendDataToOpenGL();
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 }
 
 // Paint OpenGL
@@ -239,11 +238,11 @@ void Window::paintGL(void)
 	this->models[0].setRotation(Spacecraft::rotation);
 
 	// Calculate local directions and camera
-	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->getModel(0).getRotation().z), glm::vec3(0, 0, 1));
+	glm::mat4 worldMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(this->models[0].getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->models[0].getRotation().y - 180.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(this->models[0].getRotation().z), glm::vec3(0, 0, 1));
 	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	Camera::position = this->getModel(0).getPosition() + glm::vec3(worldMatrix * glm::vec4(glm::vec3(0.0f, 6.0f, 15.0f), 1.0f));
+	Camera::position = this->models[0].getPosition() + glm::vec3(worldMatrix * glm::vec4(glm::vec3(0.0f, 6.0f, 15.0f), 1.0f));
 	Camera::direction = front;
 
 	// Spaceship-dependent matrices
@@ -262,50 +261,53 @@ void Window::paintGL(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Model
-	this->getShader(0).use();
+	this->shaders[0].use();
 
-	this->getShader(0).setVec3("eyePositionWorld", eyePosition);
-	this->getShader(0).setVec3("dirlight.direction", lightPosition);
-	this->getShader(0).setFloat("dirlight.intensity", 1.0f);
-	this->getShader(0).setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
-	this->getShader(0).setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-	this->getShader(0).setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
-	this->getShader(0).setFloat("material.shininess", 32.0f);
+	this->shaders[0].setVec3("eyePositionWorld", eyePosition);
+	this->shaders[0].setVec3("dirlight.direction", lightPosition);
+	this->shaders[0].setFloat("dirlight.intensity", 1.0f);
+	this->shaders[0].setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
+	this->shaders[0].setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
+	this->shaders[0].setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
+	this->shaders[0].setFloat("material.shininess", 32.0f);
 
-	for (int i = 0; i < this->getModelSize(); i++) {
+	for (int i = 0; i < this->models.size(); i++) {
 		// Model and filters
 		Model model = this->models[i];
-		std::vector<uint> targets = { 1, 3, 5 };
+		std::vector<uint> targets = { 1, 4, 7, 10 };
 		std::vector<uint>::iterator it = std::find(targets.begin(), targets.end(), i);
+
+		// Update process
+		if (it != targets.end()) {
+			this->models[i].setRotation(glm::vec3(0.0f, Clock::time * (i == 10 ? 10.0f : 90.0f), 0.0f));
+			glDisable(GL_CULL_FACE);
+		}
 
 		// Shader uniform values
 		glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), model.getScale());
 		glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().x), glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().y), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(model.getRotation().z), glm::vec3(0, 0, 1));
 		glm::mat4 translateMatrix = glm::translate(glm::mat4(1.0f), model.getPosition());
 
-		if (it != targets.end()) {
-			this->models[i].setRotation(glm::vec3(0.0f, Clock::time * 90.0f, 0.0f));
-		}
-
-		this->getShader(0).setMat4("scaleMatrix", scaleMatrix);
-		this->getShader(0).setMat4("rotationMatrix", rotationMatrix);
-		this->getShader(0).setMat4("translateMatrix", translateMatrix);
-		this->getShader(0).setMat4("viewMatrix", viewMatrix);
-		this->getShader(0).setMat4("projectionMatrix", projectionMatrix);
+		this->shaders[0].setMat4("scaleMatrix", scaleMatrix);
+		this->shaders[0].setMat4("rotationMatrix", rotationMatrix);
+		this->shaders[0].setMat4("translateMatrix", translateMatrix);
+		this->shaders[0].setMat4("viewMatrix", viewMatrix);
+		this->shaders[0].setMat4("projectionMatrix", projectionMatrix);
 
 		// Draw with texture
-		this->getTexture(model.getTexture()).bind(0);
+		this->textures[model.getTexture()].bind(0);
 		model.draw();
-		this->getTexture(model.getTexture()).unbind();
+		this->textures[model.getTexture()].unbind();
+		glEnable(GL_CULL_FACE);
 	}
 
 	// Skybox
 	glDepthFunc(GL_LEQUAL);
 	glDepthMask(GL_FALSE);
-	this->getShader(1).use();
+	this->shaders[1].use();
 
-	this->getShader(1).setMat4("view", skyboxViewMatrix);
-	this->getShader(1).setMat4("projection", projectionMatrix);
+	this->shaders[1].setMat4("view", skyboxViewMatrix);
+	this->shaders[1].setMat4("projection", projectionMatrix);
 
 	glBindVertexArray(Skybox::vaoID);
 	glActiveTexture(GL_TEXTURE0);
@@ -327,16 +329,6 @@ void Window::createShader(const char* vertexPath, const char* fragmentPath)
 	this->shaders.push_back(shader);
 }
 
-// Remove shader
-void Window::removeShader(uint index)
-{
-	if (index > this->shaders.size()) {
-		std::cout << "Invalid index" << std::endl;
-		return;
-	}
-	this->shaders.erase(this->shaders.begin() + index);
-}
-
 // Create model
 void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr)
 {
@@ -344,49 +336,19 @@ void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm:
 	this->models.push_back(model);
 }
 
-// Remove model
-void Window::removeModel(uint index)
-{
-	if (index > this->models.size()) {
-		std::cout << "Invalid index" << std::endl;
-		return;
-	}
-	this->models.erase(this->models.begin() + index);
-}
-
 // Create alien
 void Window::createAlien(glm::vec3 position)
 {
 	Alien alien;
-	alien.index = this->getModelSize();
+	alien.index = this->models.size();
 	alien.position = position;
 	alien.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2);                              // Alien vehicle (index)
-	this->createModel("Resources/alienpeople.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2); // Alien people (index + 1)
+	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2);                               // Alien vehicle (index)
+	this->createModel("Resources/alienpeople2.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2); // Alien people (index + 1)
+	this->createModel("Resources/chicken2.obj", alien.position + glm::vec3(15.0f, 2.0f, 0.0f), alien.rotation, glm::vec3(0.01f, 0.01f, 0.01f), 7); // Chicken (index + 2)
 
 	this->aliens.push_back(alien);
-}
-
-// Remove alien
-void Window::removeAlien(uint index)
-{
-	if (index > this->aliens.size()) {
-		std::cout << "Invalid index" << std::endl;
-		return;
-	}
-
-	this->removeModel(this->aliens[index].index + 1);
-	this->removeModel(this->aliens[index].index);
-
-	for (Alien alien : this->aliens)
-	{
-		if (alien.index > this->aliens[index].index) {
-			alien.index -= 2;
-		}
-	}
-
-	this->aliens.erase(this->aliens.begin() + index);
 }
 
 // Create texture
@@ -396,62 +358,10 @@ void Window::createTexture(const char* texturePath)
 	this->textures.push_back(texture);
 }
 
-// Remove texture
-void Window::removeTexture(uint index)
-{
-	if (index > this->textures.size()) {
-		std::cout << "Invalid index" << std::endl;
-		return;
-	}
-	this->textures.erase(this->textures.begin() + index);
-}
-
 // Get status value
 int Window::getStatus()
 {
 	return this->status;
-}
-
-// Get model vector size
-int Window::getModelSize()
-{
-	return int(this->models.size());
-}
-
-// Get shader
-Shader Window::getShader(uint index)
-{
-	if (index > this->shaders.size()) {
-		std::cout << "Invalid index" << std::endl;
-	}
-	return this->shaders[index];
-}
-
-// Get model
-Model Window::getModel(uint index)
-{
-	if (index > this->models.size()) {
-		std::cout << "Invalid index" << std::endl;
-	}
-	return this->models[index];
-}
-
-// Get alien
-Alien Window::getAlien(uint index)
-{
-	if (index > this->aliens.size()) {
-		std::cout << "Invalid index" << std::endl;
-	}
-	return this->aliens[index];
-}
-
-// Get texture
-Texture Window::getTexture(uint index)
-{
-	if (index > this->textures.size()) {
-		std::cout << "Invalid index" << std::endl;
-	}
-	return this->textures[index];
 }
 
 // Frame buffer callback
@@ -493,7 +403,7 @@ void Window::key_callback(GLFWwindow* window, int key, int scancode, int action,
 	glm::vec3 front = glm::vec3(worldMatrix * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 	glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-	const float sensitivity = 0.5f;
+	const float sensitivity = 2.0f;
 	front *= sensitivity;
 	right *= sensitivity;
 

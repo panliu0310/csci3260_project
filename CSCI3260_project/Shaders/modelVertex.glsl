@@ -22,7 +22,7 @@ void main()
 	
 	UV = uv;
 
-	vec4 normal_temp = translateMatrix * vec4(normal, 0);
+	vec4 normal_temp = translateMatrix * rotationMatrix * vec4(normal, 0);
 	normalWorld = normal_temp.xyz;
 	vertexPositionWorld = newPosition.xyz;
 }
