@@ -72,6 +72,7 @@ namespace Spacecraft
 {
 	glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 	glm::vec3 rotation = glm::vec3(0.0f, 180.0f, 0.0f);
+	int tasks = 0;
 }
 
 // Clock
@@ -194,6 +195,7 @@ void Window::sendDataToOpenGL()
 	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0);              // Spacecraft (0)
 	for (int i = 1; i <= 3; i++) {
 		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                          // Aliens (1-9)
+		Spacecraft::tasks += 2;
 		}
 	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (10)
 	for (int j = 0; j <= 300; j++) {
@@ -274,28 +276,31 @@ void Window::paintGL(void)
 		Model model = this->models[i];
 
 		// Update process
-		if (i == 1 || i == 4 || i == 7 || i == 10) {
+		if (i == 1 || i == 4 || i == 7 || i == 10) { // Spaceship and planet
 			this->models[i].setRotation(glm::vec3(0.0f, float(Clock::time) * (i == 10 ? 10.0f : 90.0f), 0.0f));
-			if (i != 10 && Model::dist(this->models[0], this->models[i]) <= 15.0f)
+			if (i != 10 && this->models[i].getTexture() != 3 && Model::dist(this->models[0], this->models[i]) <= 15.0f)
 			{
+				Spacecraft::tasks--;
 				this->models[i].setTexture(3);
 			}
 			glDisable(GL_CULL_FACE);
 		}
 		
-		if (i == 3 || i == 6 || i == 9) {
-			if (i == 3) { std::cout << "Distance is " << Model::dist(this->models[0], this->models[i]) << std::endl; }
-			if (Model::dist(this->models[0], this->models[i]) <= 2.0f) {
+		if (i == 3 || i == 6 || i == 9) { // Chicken
+			if (this->models[i].getAlpha() != 0.0f && Model::dist(this->models[0], this->models[i]) <= 4.0f) {
+				Spacecraft::tasks--;
 				this->models[i].setAlpha(0.0f);
 			}
 		}
 		
-		if (i >= 11 && i <= 310) {
+		if (i >= 11 && i <= 310) { // Rock
 			this->rocks[i - 11].angle += float(Clock::delta) * 0.1f;
 			this->models[i].setPosition(this->models[10].getPosition() + glm::vec3(this->rocks[i - 11].radius * glm::sin(this->rocks[i - 11].angle), 10.0f, this->rocks[i - 11].radius * glm::cos(this->rocks[i - 11].angle)));
 			this->models[i].setRotation(this->rocks[i - 11].rotation);
 			this->models[i].setScale(glm::vec3(this->rocks[i - 11].scale));
 		}
+
+		this->models[0].setTexture(Spacecraft::tasks > 0 ? 0 : 1);
 
 		// Shader uniform values
 		glm::mat4 scaleMatrix = glm::scale(glm::mat4(1.0f), model.getScale());
@@ -307,12 +312,13 @@ void Window::paintGL(void)
 		this->shaders[0].setMat4("translateMatrix", translateMatrix);
 		this->shaders[0].setMat4("viewMatrix", viewMatrix);
 		this->shaders[0].setMat4("projectionMatrix", projectionMatrix);
-		this->shaders[0].setFloat("alpha", this->models[i].getAlpha());
 
 		// Draw with texture
+		if (this->models[i].getAlpha()) {
 		this->textures[model.getTexture()].bind(0);
 		model.draw();
 		this->textures[model.getTexture()].unbind();
+		}
 		glEnable(GL_CULL_FACE);
 	}
 
@@ -374,6 +380,7 @@ void Window::createRock()
 	rock.angle = glm::radians(glm::linearRand(0.0f, 360.0f));
 	rock.index = this->models.size();
 	rock.rotation = glm::vec3(glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)));
+	std::cout << rock.rotation.x << ", " << rock.rotation.y << ", " << rock.rotation.z << std::endl;
 	rock.scale = glm::linearRand(1.0f, 2.0f);
 	this->createModel("Resources/rock.obj", this->models[10].getPosition() + glm::vec3(rock.radius * glm::sin(rock.angle), 10.0f, rock.radius * glm::cos(rock.angle)), rock.rotation, glm::vec3(rock.scale), 6); // Rock (index)
 	

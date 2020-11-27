@@ -36,7 +36,6 @@ struct Material {
 	float shininess;
 };
 uniform Material material;
-uniform float alpha;
 
 vec3 CalcDirLight(DirLight light, vec3 norm, vec3 viewDir)
 {
@@ -86,5 +85,5 @@ void main()
 	// phase 2: Point lights
 	// result += CalcPointLight(pointlight, norm, vertexPositionWorld, viewDir);
 
-	Color = vec4(result, alpha);
+	Color = vec4(result, 1.0f);
 }

@@ -39,6 +39,8 @@
     <None Include="Shaders\modelVertex.glsl" />
     <None Include="Shaders\skyboxFragment.glsl" />
     <None Include="Shaders\skyboxVertex.glsl" />
+    <None Include="Shaders\normalFragment.glsl" />
+    <None Include="Shaders\normalVertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
