@@ -199,7 +199,7 @@ void Window::sendDataToOpenGL()
 		}
 	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (10)
 	for (int j = 0; j <= 300; j++) {
-		this->createRock();                                                                                                                      // Rock (11-310)
+		this->createRock(j);                                                                                                                      // Rock (11-310)
 	}
 
 	// Textures
@@ -211,6 +211,7 @@ void Window::sendDataToOpenGL()
 	this->createTexture("Resources/texture/planetNormal.bmp");                  // Planet normal (5)
 	this->createTexture("Resources/texture/rockTexture.bmp");                   // Rock (6)
 	this->createTexture("Resources/texture/chickenTexture.bmp");                // Chicken (7)
+	this->createTexture("Resources/texture/rockNormal.png");                    // Rock normal (8)
 }
 
 // Initialize OpenGL
@@ -232,6 +233,7 @@ void Window::paintGL(void)
 	// Vectors and matrices
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
+	glm::vec3 pointlightPosition1(40.0f, 40.0f, 40.0f);
 
 	// Update spacecraft
 	this->models[0].setPosition(Spacecraft::position);
@@ -264,15 +266,32 @@ void Window::paintGL(void)
 	this->shaders[0].use();
 
 	this->shaders[0].setVec3("eyePositionWorld", eyePosition);
+
 	this->shaders[0].setVec3("dirlight.direction", lightPosition);
 	this->shaders[0].setFloat("dirlight.intensity", 1.0f);
 	this->shaders[0].setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 	this->shaders[0].setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->shaders[0].setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
+
+	this->shaders[0].setVec3("pointlight.direction", pointlightPosition1);
+
+	/*struct PointLight {
+		vec3 position;
+
+		float constant;
+		float linear;
+		float quadratic;
+
+		vec3 ambient;
+		vec3 diffuse;
+		vec3 specular;
+	};*/
+
 	this->shaders[0].setInt("material.txtr", 0);
 	this->shaders[0].setFloat("material.shininess", 32.0f);
 	this->shaders[0].setInt("normalTxtr", 1);
 
+	uint rockIndex = 0;
 	for (int i = 0; i < this->models.size(); i++) {
 		// Model and filters
 		Model model = this->models[i];
@@ -280,29 +299,30 @@ void Window::paintGL(void)
 		// Update process
 		if (i == 1 || i == 4 || i == 7 || i == 10) { // Spaceship and planet
 			this->models[i].setRotation(glm::vec3(0.0f, float(Clock::time) * (i == 10 ? 10.0f : 90.0f), 0.0f));
-			if (i != 10 && this->models[i].getTexture() != 3 && Model::dist(this->models[0], this->models[i]) <= 15.0f)
+			if (i != 10 && this->models[i].getTexture() != 3 && Model::dist(this->models[0].getPosition(), this->models[i].getPosition()) <= 15.0f)
 			{
 				Spacecraft::tasks--;
 				this->models[i].setTexture(3);
 			}
 			glDisable(GL_CULL_FACE);
 		}
-		this->shaders[0].setInt("useNormal", i == 10);
 		
 		if (i == 3 || i == 6 || i == 9) { // Chicken
-			if (this->models[i].getAlpha() != 0.0f && Model::dist(this->models[0], this->models[i]) <= 4.0f) {
+			if (this->models[i].getAlpha() != 0.0f && Model::dist(this->models[0].getPosition(), this->models[i].getPosition()) <= 4.0f) {
 				Spacecraft::tasks--;
 				this->models[i].setAlpha(0.0f);
 			}
 		}
 		
 		if (i >= 11 && i <= 310) { // Rock
-			this->rocks[i - 11].angle += float(Clock::delta) * 0.1f;
-			this->models[i].setPosition(this->models[10].getPosition() + glm::vec3(this->rocks[i - 11].radius * glm::sin(this->rocks[i - 11].angle), 10.0f, this->rocks[i - 11].radius * glm::cos(this->rocks[i - 11].angle)));
-			this->models[i].setRotation(this->rocks[i - 11].rotation);
-			this->models[i].setScale(glm::vec3(this->rocks[i - 11].scale));
+			this->rocks[rockIndex].angle += float(Clock::delta) * 0.1f;
+			this->models[i].setPosition(this->models[10].getPosition() + glm::vec3(this->rocks[rockIndex].radius * glm::sin(this->rocks[rockIndex].angle), 10.0f, this->rocks[rockIndex].radius * glm::cos(this->rocks[rockIndex].angle)));
+			this->models[i].setRotation(this->rocks[rockIndex].rotation);
+			this->models[i].setScale(glm::vec3(this->rocks[rockIndex].scale));
+			rockIndex++;
 		}
 
+		this->shaders[0].setInt("useNormal", i >= 10 && i <= 310);
 		this->models[0].setTexture(Spacecraft::tasks > 0 ? 0 : 1);
 
 		// Shader uniform values
@@ -318,11 +338,19 @@ void Window::paintGL(void)
 
 		// Draw with texture
 		if (this->models[i].getAlpha()) {
-		this->textures[model.getTexture()].bind(0);
-		if (i == 10) { this->textures[5].bind(1); }
-		model.draw();
-		this->textures[model.getTexture()].unbind();
-		this->textures[5].unbind();
+			this->textures[model.getTexture()].bind(0);
+			if (i == 10) {
+				this->textures[5].bind(1);
+			} else if (i >= 11 && i <= 310) {
+				this->textures[8].bind(1);
+			}
+			model.draw();
+			this->textures[model.getTexture()].unbind();
+			if (i == 10) {
+				this->textures[5].unbind();
+			} else if (i >= 11 && i <= 310) {
+				this->textures[8].unbind();
+			}
 		}
 		glEnable(GL_CULL_FACE);
 	}
@@ -370,24 +398,25 @@ void Window::createAlien(glm::vec3 pos)
 	alien.position = pos;
 	alien.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f), 2);                               // Alien vehicle (index)
-	this->createModel("Resources/alienpeople2.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f), 2); // Alien people (index + 1)
-	this->createModel("Resources/chicken2.obj", alien.position + glm::vec3(15.0f, 2.0f, 0.0f), alien.rotation, glm::vec3(0.02f), 7);   // Chicken (index + 2)
+	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2);                               // Alien vehicle (index)
+	this->createModel("Resources/alienpeople2.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2); // Alien people (index + 1)
+	this->createModel("Resources/chicken2.obj", alien.position + glm::vec3(15.0f, 2.0f, 0.0f), alien.rotation, glm::vec3(0.02f, 0.02f, 0.02f), 7); // Chicken (index + 2)
 
 	this->aliens.push_back(alien);
 }
 
 // Create rock
-void Window::createRock()
+void Window::createRock(int index)
 {
 	Rock rock;
-	rock.radius = glm::linearRand(80.0f, 110.0f);
-	rock.angle = glm::radians(glm::linearRand(0.0f, 360.0f));
+
 	rock.index = this->models.size();
-	rock.rotation = glm::vec3(glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)));
-	rock.scale = glm::linearRand(1.0f, 2.0f);
-	this->createModel("Resources/rock.obj", this->models[10].getPosition() + glm::vec3(rock.radius * glm::sin(rock.angle), 10.0f, rock.radius * glm::cos(rock.angle)), rock.rotation, glm::vec3(rock.scale), 6); // Rock (index)
-	
+	rock.radius = glm::linearRand(80.0f, 110.0f);
+	rock.angle = glm::radians(360.0f * index / 300.0f);
+	rock.rotation = glm::vec3(glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 360.0f), glm::linearRand(0.0f, 360.0f));
+	rock.scale = glm::linearRand(0.25f, 2.5f);
+
+	this->createModel("Resources/rock.obj", this->models[10].getPosition() + glm::vec3(rock.radius * glm::sin(rock.angle), 10.0f, rock.radius * glm::cos(rock.angle)), rock.rotation, glm::vec3(rock.scale, rock.scale, rock.scale), 6); // Rock (index)
 	this->rocks.push_back(rock);
 }
 

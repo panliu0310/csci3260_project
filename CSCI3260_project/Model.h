@@ -30,7 +30,7 @@ class Model
 	// Functions
 	public:
 		void draw();
-		static float dist(Model modelA, Model modelB);
+		static float dist(glm::vec3 posA, glm::vec3 posB);
 
 	// Getters
 	public:

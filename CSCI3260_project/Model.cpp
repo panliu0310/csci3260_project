@@ -121,9 +121,9 @@ void Model::draw()
 }
 
 // Distance function
-float Model::dist(Model modelA, Model modelB)
+float Model::dist(glm::vec3 posA, glm::vec3 posB)
 {
-	return glm::sqrt(glm::pow(modelA.getPosition().x - modelB.getPosition().x, 2) + glm::pow(modelA.getPosition().z - modelB.getPosition().z, 2));
+	return glm::sqrt(glm::pow(posA.x - posB.x, 2) + glm::pow(posA.z - posB.z, 2));
 }
 
 // Get position
