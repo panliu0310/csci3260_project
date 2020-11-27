@@ -233,7 +233,7 @@ void Window::paintGL(void)
 	// Vectors and matrices
 	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
 	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
-	glm::vec3 pointlightPosition1(40.0f, 40.0f, 40.0f);
+	glm::vec3 pointlightPosition1(Spacecraft::position);
 
 	// Update spacecraft
 	this->models[0].setPosition(Spacecraft::position);
@@ -273,19 +273,13 @@ void Window::paintGL(void)
 	this->shaders[0].setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->shaders[0].setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 
-	this->shaders[0].setVec3("pointlight.direction", pointlightPosition1);
-
-	/*struct PointLight {
-		vec3 position;
-
-		float constant;
-		float linear;
-		float quadratic;
-
-		vec3 ambient;
-		vec3 diffuse;
-		vec3 specular;
-	};*/
+	this->shaders[0].setVec3("pointlight.position", pointlightPosition1);
+	this->shaders[0].setFloat("pointlight.constant", 1.0f);
+	this->shaders[0].setFloat("pointlight.linear", 0.09f);
+	this->shaders[0].setFloat("pointlight.quadratic", 0.032f);
+	this->shaders[0].setVec3("pointlight.ambient", glm::vec3(1.0f, 1.0f, 1.0f));
+	this->shaders[0].setVec3("pointlight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+	this->shaders[0].setVec3("pointlight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
 
 	this->shaders[0].setInt("material.txtr", 0);
 	this->shaders[0].setFloat("material.shininess", 32.0f);

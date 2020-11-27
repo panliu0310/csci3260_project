@@ -29,7 +29,7 @@ struct PointLight {
 	vec3 diffuse;
 	vec3 specular;
 };
-//uniform PointLight pointlight;
+PointLight pointlight;
 
 struct Material {
 	sampler2D txtr;
@@ -85,7 +85,7 @@ void main()
 	// phase 1: Directional lighting
 	vec3 result = CalcDirLight(dirlight, norm, viewDir);
 	// phase 2: Point lights
-	// result += CalcPointLight(pointlight, norm, vertexPositionWorld, viewDir);
+	result += CalcPointLight(pointlight, norm, vertexPositionWorld, viewDir);
 
 	Color = vec4(result, 1.0f);
 }
