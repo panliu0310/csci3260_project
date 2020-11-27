@@ -269,7 +269,9 @@ void Window::paintGL(void)
 	this->shaders[0].setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 	this->shaders[0].setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->shaders[0].setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
+	this->shaders[0].setInt("material.txtr", 0);
 	this->shaders[0].setFloat("material.shininess", 32.0f);
+	this->shaders[0].setInt("normalTxtr", 1);
 
 	for (int i = 0; i < this->models.size(); i++) {
 		// Model and filters
@@ -285,6 +287,7 @@ void Window::paintGL(void)
 			}
 			glDisable(GL_CULL_FACE);
 		}
+		this->shaders[0].setInt("useNormal", i == 10);
 		
 		if (i == 3 || i == 6 || i == 9) { // Chicken
 			if (this->models[i].getAlpha() != 0.0f && Model::dist(this->models[0], this->models[i]) <= 4.0f) {
@@ -316,8 +319,10 @@ void Window::paintGL(void)
 		// Draw with texture
 		if (this->models[i].getAlpha()) {
 		this->textures[model.getTexture()].bind(0);
+		if (i == 10) { this->textures[5].bind(1); }
 		model.draw();
 		this->textures[model.getTexture()].unbind();
+		this->textures[5].unbind();
 		}
 		glEnable(GL_CULL_FACE);
 	}
@@ -380,7 +385,6 @@ void Window::createRock()
 	rock.angle = glm::radians(glm::linearRand(0.0f, 360.0f));
 	rock.index = this->models.size();
 	rock.rotation = glm::vec3(glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)));
-	std::cout << rock.rotation.x << ", " << rock.rotation.y << ", " << rock.rotation.z << std::endl;
 	rock.scale = glm::linearRand(1.0f, 2.0f);
 	this->createModel("Resources/rock.obj", this->models[10].getPosition() + glm::vec3(rock.radius * glm::sin(rock.angle), 10.0f, rock.radius * glm::cos(rock.angle)), rock.rotation, glm::vec3(rock.scale), 6); // Rock (index)
 	
