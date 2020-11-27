@@ -120,6 +120,12 @@ void Model::draw()
 	glDrawElements(GL_TRIANGLES, GLsizei(this->indices.size()), GL_UNSIGNED_INT, 0);
 }
 
+// Distance function
+float Model::dist(Model modelA, Model modelB)
+{
+	return glm::sqrt(glm::pow(modelA.getPosition().x - modelB.getPosition().x, 2) + glm::pow(modelA.getPosition().z - modelB.getPosition().z, 2));
+}
+
 // Get position
 glm::vec3 Model::getPosition()
 {
@@ -144,6 +150,12 @@ unsigned int Model::getTexture()
 	return this->texture;
 }
 
+// Get alpha
+float Model::getAlpha()
+{
+	return this->alpha;
+}
+
 // Set position
 void Model::setPosition(glm::vec3 pos)
 {
@@ -166,4 +178,10 @@ void Model::setScale(glm::vec3 scl)
 void Model::setTexture(unsigned int txtr) 
 {
 	this->texture = txtr;
+}
+
+// Set alpha
+void Model::setAlpha(float alpha)
+{
+	this->alpha = alpha;
 }

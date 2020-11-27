@@ -197,9 +197,7 @@ void Window::sendDataToOpenGL()
 		}
 	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (10)
 	for (int j = 0; j <= 300; j++) {
-		float radius = glm::linearRand(80.0f, 110.0f), angle = glm::radians(glm::linearRand(0.0f, 360.0f)), scale = glm::linearRand(1.0f, 2.0f);
-		glm::vec3 pos = this->models[10].getPosition() + glm::vec3(radius * glm::sin(angle), 10.0f, radius * glm::cos(angle));
-		this->createModel("Resources/rock.obj", pos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(scale, scale, scale), 6);                            // Rock (11-310)
+		this->createRock();                                                                                                                      // Rock (11-310)
 	}
 
 	// Textures
@@ -274,13 +272,29 @@ void Window::paintGL(void)
 	for (int i = 0; i < this->models.size(); i++) {
 		// Model and filters
 		Model model = this->models[i];
-		std::vector<uint> targets = { 1, 4, 7, 10 };
-		std::vector<uint>::iterator it = std::find(targets.begin(), targets.end(), i);
 
 		// Update process
-		if (it != targets.end()) {
-			this->models[i].setRotation(glm::vec3(0.0f, Clock::time * (i == 10 ? 10.0f : 90.0f), 0.0f));
+		if (i == 1 || i == 4 || i == 7 || i == 10) {
+			this->models[i].setRotation(glm::vec3(0.0f, float(Clock::time) * (i == 10 ? 10.0f : 90.0f), 0.0f));
+			if (i != 10 && Model::dist(this->models[0], this->models[i]) <= 15.0f)
+			{
+				this->models[i].setTexture(3);
+			}
 			glDisable(GL_CULL_FACE);
+		}
+		
+		if (i == 3 || i == 6 || i == 9) {
+			if (i == 3) { std::cout << "Distance is " << Model::dist(this->models[0], this->models[i]) << std::endl; }
+			if (Model::dist(this->models[0], this->models[i]) <= 2.0f) {
+				this->models[i].setAlpha(0.0f);
+			}
+		}
+		
+		if (i >= 11 && i <= 310) {
+			this->rocks[i - 11].angle += float(Clock::delta) * 0.1f;
+			this->models[i].setPosition(this->models[10].getPosition() + glm::vec3(this->rocks[i - 11].radius * glm::sin(this->rocks[i - 11].angle), 10.0f, this->rocks[i - 11].radius * glm::cos(this->rocks[i - 11].angle)));
+			this->models[i].setRotation(this->rocks[i - 11].rotation);
+			this->models[i].setScale(glm::vec3(this->rocks[i - 11].scale));
 		}
 
 		// Shader uniform values
@@ -293,6 +307,7 @@ void Window::paintGL(void)
 		this->shaders[0].setMat4("translateMatrix", translateMatrix);
 		this->shaders[0].setMat4("viewMatrix", viewMatrix);
 		this->shaders[0].setMat4("projectionMatrix", projectionMatrix);
+		this->shaders[0].setFloat("alpha", this->models[i].getAlpha());
 
 		// Draw with texture
 		this->textures[model.getTexture()].bind(0);
@@ -337,18 +352,32 @@ void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm:
 }
 
 // Create alien
-void Window::createAlien(glm::vec3 position)
+void Window::createAlien(glm::vec3 pos)
 {
 	Alien alien;
 	alien.index = this->models.size();
-	alien.position = position;
+	alien.position = pos;
 	alien.rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
-	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2);                               // Alien vehicle (index)
-	this->createModel("Resources/alienpeople2.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f, 2.0f, 2.0f), 2); // Alien people (index + 1)
-	this->createModel("Resources/chicken2.obj", alien.position + glm::vec3(15.0f, 2.0f, 0.0f), alien.rotation, glm::vec3(0.01f, 0.01f, 0.01f), 7); // Chicken (index + 2)
+	this->createModel("Resources/alienvehicle.obj", alien.position, alien.rotation, glm::vec3(2.0f), 2);                               // Alien vehicle (index)
+	this->createModel("Resources/alienpeople2.obj", alien.position + glm::vec3(0.0f, 6.0f, 0.0f), alien.rotation, glm::vec3(2.0f), 2); // Alien people (index + 1)
+	this->createModel("Resources/chicken2.obj", alien.position + glm::vec3(15.0f, 2.0f, 0.0f), alien.rotation, glm::vec3(0.02f), 7);   // Chicken (index + 2)
 
 	this->aliens.push_back(alien);
+}
+
+// Create rock
+void Window::createRock()
+{
+	Rock rock;
+	rock.radius = glm::linearRand(80.0f, 110.0f);
+	rock.angle = glm::radians(glm::linearRand(0.0f, 360.0f));
+	rock.index = this->models.size();
+	rock.rotation = glm::vec3(glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)), glm::radians(glm::linearRand(0.0f, 360.0f)));
+	rock.scale = glm::linearRand(1.0f, 2.0f);
+	this->createModel("Resources/rock.obj", this->models[10].getPosition() + glm::vec3(rock.radius * glm::sin(rock.angle), 10.0f, rock.radius * glm::cos(rock.angle)), rock.rotation, glm::vec3(rock.scale), 6); // Rock (index)
+	
+	this->rocks.push_back(rock);
 }
 
 // Create texture

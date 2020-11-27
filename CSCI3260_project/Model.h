@@ -25,10 +25,12 @@ class Model
 		glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
 		unsigned int texture = 0;
+		float alpha = 1.0f;
 
 	// Functions
 	public:
 		void draw();
+		static float dist(Model modelA, Model modelB);
 
 	// Getters
 	public:
@@ -36,6 +38,7 @@ class Model
 		glm::vec3 getRotation();
 		glm::vec3 getScale();
 		unsigned int getTexture();
+		float getAlpha();
 
 	// Setters
 	public:
@@ -43,5 +46,6 @@ class Model
 		void setRotation(glm::vec3 rot);
 		void setScale(glm::vec3 scl);
 		void setTexture(unsigned int txtr);
+		void setAlpha(float alpha);
 };
 

@@ -6,8 +6,16 @@
 
 struct Alien
 {
-  uint index;
-  glm::vec3 position, rotation;
+	uint index;
+	glm::vec3 position, rotation;
+};
+
+struct Rock
+{
+	uint index;
+  float radius, angle;
+	glm::vec3 rotation;
+	uint scale;
 };
 
 class Window
@@ -24,6 +32,7 @@ class Window
     std::vector<Shader> shaders;
     std::vector<Model> models;
     std::vector<Alien> aliens;
+    std::vector<Rock> rocks;
     std::vector<Texture> textures;
 
   // Functions
@@ -36,7 +45,8 @@ class Window
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
     void createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr);
-    void createAlien(glm::vec3 position);
+    void createAlien(glm::vec3 pos);
+		void createRock();
     void createTexture(const char* texturePath);
 
   // Getters
