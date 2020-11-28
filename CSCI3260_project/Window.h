@@ -45,7 +45,7 @@ class Window
   public:
     void createShader(const char* vertexPath, const char* fragmentPath);
     void createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, uint txtr);
-    void createAlien(glm::vec3 pos);
+    void createAlien(glm::vec3 pos, int type);
 		void createRock(int index);
     void createTexture(const char* texturePath);
 
