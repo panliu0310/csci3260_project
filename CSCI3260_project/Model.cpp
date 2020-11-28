@@ -2,7 +2,7 @@
 #include "Model.h"
 
 struct V {
-	unsigned int index_position, index_uv, index_normal;
+	uint index_position, index_uv, index_normal;
 	bool operator == (const V& v) const {
 		return index_position == v.index_position && index_uv == v.index_uv && index_normal == v.index_normal;
 	}
@@ -12,14 +12,14 @@ struct V {
 };
 
 // Constructor
-Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr)
+Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, uint txtr)
 {
 	std::vector<glm::vec3> temp_positions;
 	std::vector<glm::vec2> temp_uvs;
 	std::vector<glm::vec3> temp_normals;
-	std::map<V, unsigned int> temp_vertices;
+	std::map<V, uint> temp_vertices;
 
-	unsigned int num_vertices = 0;
+	uint num_vertices = 0;
 	if (DEBUG_MODE) { std::cout << "\nLoading OBJ file " << objPath << "..." << std::endl; }
 
 	std::ifstream file;
@@ -55,14 +55,14 @@ Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, u
 				file >> vertices[i].index_position >> ch >> vertices[i].index_uv >> ch >> vertices[i].index_normal;
 			}
 
-			/*std::string redundency;
+			/* std::string redundency;
 			std::getline(file, redundency);
 			if (redundency.length() >= 5) {
 				std::cerr << "There may exist some errors while load the obj file. Error content: [" << redundency << " ]" << std::endl;
 				std::cerr << "Please note that we only support the faces drawing with triangles. There are more than three vertices in one face." << std::endl;
 				std::cerr << "Your obj file can't be read properly by our simple parser. Try exporting with other options." << std::endl;
 				exit(1);
-			}*/
+			} */
 
 			for (int i = 0; i < 3; i++) {
 				if (temp_vertices.find(vertices[i]) == temp_vertices.end()) {
@@ -73,11 +73,10 @@ Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, u
 
 					this->vertices.push_back(vertex);
 					this->indices.push_back(num_vertices);
-					temp_vertices[vertices[i]] = num_vertices;
-					num_vertices += 1;
+					temp_vertices[vertices[i]] = num_vertices++;
 				}
 				else {
-					unsigned int index = temp_vertices[vertices[i]];
+					uint index = temp_vertices[vertices[i]];
 					this->indices.push_back(index);
 				}
 			}
@@ -104,7 +103,7 @@ Model::Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, u
 
 	glGenBuffers(1, &this->eboID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->eboID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(unsigned int), &this->indices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(uint), &this->indices[0], GL_STATIC_DRAW);
 
 	this->setPosition(pos);
 	this->setRotation(rot);
@@ -145,7 +144,7 @@ glm::vec3 Model::getScale()
 }
 
 // Get texture
-unsigned int Model::getTexture()
+uint Model::getTexture()
 {
 	return this->texture;
 }
@@ -175,7 +174,7 @@ void Model::setScale(glm::vec3 scl)
 }
 
 // Set texture
-void Model::setTexture(unsigned int txtr) 
+void Model::setTexture(uint txtr) 
 {
 	this->texture = txtr;
 }

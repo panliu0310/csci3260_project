@@ -1,13 +1,5 @@
 #version 430
 
-in vec2 UV;
-in vec3 normalWorld;
-in vec3 vertexPositionWorld;
-
-uniform vec3 eyePositionWorld;
-
-out vec4 Color;
-
 struct DirLight {
 	vec3 direction;
 	float intensity;
@@ -16,7 +8,6 @@ struct DirLight {
 	vec3 diffuse;
 	vec3 specular;
 };
-uniform DirLight dirlight;
 
 struct PointLight {
 	vec3 position;
@@ -29,16 +20,24 @@ struct PointLight {
 	vec3 diffuse;
 	vec3 specular;
 };
-PointLight pointlight;
 
 struct Material {
 	sampler2D txtr;
 	float shininess;
 };
-uniform Material material;
 
+in vec2 UV;
+in vec3 normalWorld;
+in vec3 vertexPositionWorld;
+
+uniform vec3 eyePositionWorld;
+uniform DirLight dirlight;
+uniform PointLight pointlight;
+uniform Material material;
 uniform int useNormal;
 uniform sampler2D normalTxtr;
+
+out vec4 Color;
 
 vec3 CalcDirLight(DirLight light, vec3 norm, vec3 viewDir)
 {
@@ -57,15 +56,15 @@ vec3 CalcDirLight(DirLight light, vec3 norm, vec3 viewDir)
 
 vec3 CalcPointLight(PointLight pointlight, vec3 norm, vec3 vertexPositionWorld, vec3 viewDir)
 {
-	vec3 lightDir = normalize(dirlight.direction - vertexPositionWorld);
+	vec3 lightDir = normalize(pointlight.position - vertexPositionWorld);
 	// diffuse shading
 	float diff = max(dot(norm, lightDir), 0.0);
 	// specular shading
 	vec3 reflectDir = reflect(-lightDir, norm);
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	// attenuation
-	float distance = length(pointlight.position - vertexPositionWorld);
-	float attenuation = 1.0 / (pointlight.constant + pointlight.linear * distance + pointlight.quadratic * (distance * distance));  
+	float dist = length(pointlight.position - vertexPositionWorld);
+	float attenuation = 1.0 / (pointlight.constant + pointlight.linear * dist + pointlight.quadratic * (dist * dist));  
 	// combine results
     vec3 ambient = pointlight.ambient * vec3(texture(material.txtr, UV));
     vec3 diffuse = pointlight.diffuse * diff * vec3(texture(material.txtr, UV));

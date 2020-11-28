@@ -26,4 +26,3 @@ class Shader
 		bool checkProgramStatus(GLuint programID) const;
 		bool checkStatus(GLuint objectID, IV objectPropertyGetterFunc, IL getInfoLogFunc, GLenum statusType) const;
 };
-

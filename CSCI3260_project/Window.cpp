@@ -194,12 +194,12 @@ void Window::sendDataToOpenGL()
 	// Models
 	this->createModel("Resources/spacecraft.obj", Spacecraft::position, Spacecraft::rotation, glm::vec3(0.01f, 0.01f, 0.01f), 0);              // Spacecraft (0)
 	for (int i = 1; i <= 3; i++) {
-		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                          // Aliens (1-9)
+		this->createAlien(glm::vec3(glm::linearRand(-20.0f, 20.0f), 0.0f, -40.0f * i));                                                        // Aliens (1-9)
 		Spacecraft::tasks += 2;
-		}
+	}
 	this->createModel("Resources/planet.obj", glm::vec3(0.0f, 0.0f, -400.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(20.0f, 20.0f, 20.0f), 4); // Planet (10)
 	for (int j = 0; j <= 300; j++) {
-		this->createRock(j);                                                                                                                      // Rock (11-310)
+		this->createRock(j);                                                                                                                   // Rock (11-310)
 	}
 
 	// Textures
@@ -230,11 +230,6 @@ void Window::initializedGL(void)
 // Paint OpenGL
 void Window::paintGL(void)
 {
-	// Vectors and matrices
-	glm::vec3 eyePosition(0.0f, 0.0f, 0.0f);
-	glm::vec3 lightPosition(2.0f, 15.0f, 5.0f);
-	glm::vec3 pointlightPosition1(Spacecraft::position);
-
 	// Update spacecraft
 	this->models[0].setPosition(Spacecraft::position);
 	this->models[0].setRotation(Spacecraft::rotation);
@@ -265,21 +260,22 @@ void Window::paintGL(void)
 	// Model
 	this->shaders[0].use();
 
-	this->shaders[0].setVec3("eyePositionWorld", eyePosition);
+	this->shaders[0].setVec3("eyePositionWorld", Camera::position);
 
-	this->shaders[0].setVec3("dirlight.direction", lightPosition);
+	this->shaders[0].setVec3("dirlight.direction", glm::vec3(2.0f, 15.0f, 5.0f));
 	this->shaders[0].setFloat("dirlight.intensity", 1.0f);
 	this->shaders[0].setVec3("dirlight.ambient", glm::vec3(0.1f, 0.1f, 0.1f));
 	this->shaders[0].setVec3("dirlight.diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
 	this->shaders[0].setVec3("dirlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 
-	this->shaders[0].setVec3("pointlight.position", pointlightPosition1);
+
+	this->shaders[0].setVec3("pointlight.position", glm::vec3(0.0f, 5.0f, 5.0f));
 	this->shaders[0].setFloat("pointlight.constant", 1.0f);
-	this->shaders[0].setFloat("pointlight.linear", 0.09f);
-	this->shaders[0].setFloat("pointlight.quadratic", 0.032f);
-	this->shaders[0].setVec3("pointlight.ambient", glm::vec3(1.0f, 1.0f, 1.0f));
+	this->shaders[0].setFloat("pointlight.linear", 0.045f);
+	this->shaders[0].setFloat("pointlight.quadratic", 0.001f);
+	this->shaders[0].setVec3("pointlight.ambient", glm::vec3(0.3f, 1.0f, 1.0f));
 	this->shaders[0].setVec3("pointlight.diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
-	this->shaders[0].setVec3("pointlight.specular", glm::vec3(1.0f, 1.0f, 1.0f));
+	this->shaders[0].setVec3("pointlight.specular", glm::vec3(0.3f, 0.3f, 0.3f));
 
 	this->shaders[0].setInt("material.txtr", 0);
 	this->shaders[0].setFloat("material.shininess", 32.0f);
@@ -287,7 +283,6 @@ void Window::paintGL(void)
 
 	uint rockIndex = 0;
 	for (int i = 0; i < this->models.size(); i++) {
-		// Model and filters
 		Model model = this->models[i];
 
 		// Update process
@@ -378,7 +373,7 @@ void Window::createShader(const char* vertexPath, const char* fragmentPath)
 }
 
 // Create model
-void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr)
+void Window::createModel(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, uint txtr)
 {
 	Model model(objPath, pos, rot, scl, txtr);
 	this->models.push_back(model);

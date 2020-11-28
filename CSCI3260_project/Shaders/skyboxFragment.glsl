@@ -1,10 +1,10 @@
 #version 430
 
-out vec4 FragColor;
-
 in vec3 TexCoords;
 
 uniform samplerCube skybox;
+
+out vec4 FragColor;
 
 void main()
 {    

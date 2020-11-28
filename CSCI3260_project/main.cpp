@@ -1,9 +1,9 @@
 /*
 Student Information
-Student 1 ID:
-Student 1 Name:
-Student 2 ID:
-Student 2 Name:
+Student 1 ID: 1155127464
+Student 1 Name: Liu Hoi Pan
+Student 2 ID: 1155127101
+Student 2 Name: Ng Wing Yin
 */
 
 // Include

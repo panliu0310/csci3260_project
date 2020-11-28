@@ -1,10 +1,10 @@
 CSCI3260 Course Project: Visiting the Alien
 
-Student 1 Name:
-Student 1 ID:
+Student 1 Name: Liu Hoi Pan
+Student 1 ID: 1155127464
 
-Student 2 Name:
-Student 2 ID:
+Student 2 Name: Ng Wing Yin
+Student 2 ID: 1155127101
 
 Manipulation:
 

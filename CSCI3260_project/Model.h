@@ -12,19 +12,19 @@ class Model
 {
 	// Constructor
 	public:
-		Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, unsigned int txtr);
+		Model(const char* objPath, glm::vec3 pos, glm::vec3 rot, glm::vec3 scl, uint txtr);
 
 	// Variables
 	private:
 		GLuint vaoID{}, vboID{}, eboID{};
 		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
+		std::vector<uint> indices;
 
 	private:
 		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 		glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
-		unsigned int texture = 0;
+		uint texture = 0;
 		float alpha = 1.0f;
 
 	// Functions
@@ -37,7 +37,7 @@ class Model
 		glm::vec3 getPosition();
 		glm::vec3 getRotation();
 		glm::vec3 getScale();
-		unsigned int getTexture();
+		uint getTexture();
 		float getAlpha();
 
 	// Setters
@@ -45,7 +45,6 @@ class Model
 		void setPosition(glm::vec3 pos);
 		void setRotation(glm::vec3 rot);
 		void setScale(glm::vec3 scl);
-		void setTexture(unsigned int txtr);
+		void setTexture(uint txtr);
 		void setAlpha(float alpha);
 };
-
